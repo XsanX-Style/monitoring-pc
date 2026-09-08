@@ -483,18 +483,90 @@
     const el = $('#quick-launch-list');
     try {
       const items = await api('/run/quick-launch');
-      el.innerHTML = '';
-      items.forEach((item) => {
-        const btn = document.createElement('button');
-        btn.className = 'quick-launch-btn';
-        btn.textContent = item.name;
-        btn.addEventListener('click', () => runCommand(item.command, item.detached !== false));
-        el.appendChild(btn);
-      });
-      if (!items.length) el.textContent = 'Список пуст (server/config/quickLaunch.json)';
+      renderQuickLaunch(items);
     } catch (err) {
       el.textContent = `Ошибка: ${err.message}`;
     }
+  }
+
+  function renderQuickLaunch(items) {
+    const el = $('#quick-launch-list');
+    el.innerHTML = '';
+
+    items.forEach((item) => {
+      const chip = document.createElement('div');
+      chip.className = 'quick-launch-chip';
+
+      const btn = document.createElement('button');
+      btn.className = 'quick-launch-btn';
+      btn.textContent = item.name;
+      btn.addEventListener('click', () => runCommand(item.command, item.detached !== false));
+
+      const removeBtn = document.createElement('button');
+      removeBtn.className = 'quick-launch-remove';
+      removeBtn.textContent = '×';
+      removeBtn.title = 'Удалить ярлык';
+      removeBtn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const ok = await confirmAction(`Удалить ярлык "${item.name}"?`);
+        if (!ok) return;
+        try {
+          const updated = await api(`/run/quick-launch/${encodeURIComponent(item.id)}`, {
+            method: 'DELETE',
+          });
+          renderQuickLaunch(updated);
+        } catch (err) {
+          showToast(err.message, 'error');
+        }
+      });
+
+      chip.appendChild(btn);
+      chip.appendChild(removeBtn);
+      el.appendChild(chip);
+    });
+
+    if (!items.length) el.textContent = 'Список пуст — добавьте ярлык кнопкой «+»';
+  }
+
+  const addQuickLaunchBtn = $('#add-quick-launch-btn');
+  const quickLaunchForm = $('#quick-launch-form');
+  const cancelQuickLaunchBtn = $('#cancel-quick-launch-btn');
+
+  if (addQuickLaunchBtn && quickLaunchForm) {
+    addQuickLaunchBtn.addEventListener('click', () => {
+      quickLaunchForm.hidden = !quickLaunchForm.hidden;
+      if (!quickLaunchForm.hidden) $('#ql-name').focus();
+    });
+  }
+
+  if (cancelQuickLaunchBtn && quickLaunchForm) {
+    cancelQuickLaunchBtn.addEventListener('click', () => {
+      quickLaunchForm.hidden = true;
+      quickLaunchForm.reset();
+    });
+  }
+
+  if (quickLaunchForm) {
+    quickLaunchForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = $('#ql-name').value.trim();
+      const command = $('#ql-command').value.trim();
+      const detached = $('#ql-detached').checked;
+      if (!name || !command) return;
+
+      try {
+        const updated = await api('/run/quick-launch', {
+          method: 'POST',
+          body: { name, command, detached },
+        });
+        renderQuickLaunch(updated);
+        quickLaunchForm.reset();
+        quickLaunchForm.hidden = true;
+        showToast('Ярлык добавлен', 'success');
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    });
   }
 
   async function runCommand(command, detached) {
