@@ -12,6 +12,15 @@
   const appScreen = $('#app-screen');
 
   // ---------- Утилиты ----------
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
   function formatBytes(bytes) {
     if (!bytes || bytes <= 0) return '0 Б';
     const units = ['Б', 'КБ', 'МБ', 'ГБ', 'ТБ'];
@@ -192,10 +201,15 @@
   function renderStats(stats) {
     $('#hostname').textContent = stats.hostname || 'PC Monitor';
 
+    const coresLabel =
+      stats.cpu.physicalCores && stats.cpu.physicalCores !== stats.cpu.cores
+        ? `${stats.cpu.physicalCores} ядер (${stats.cpu.cores} потоков)`
+        : `${stats.cpu.cores} ядер`;
+
     $('#cpu-load').textContent = `${stats.cpu.loadPercent}%`;
     setBar($('#cpu-bar'), stats.cpu.loadPercent);
-    $('#cpu-meta').textContent = `${stats.cpu.brand} · ${stats.cpu.cores} ядер${
-      stats.cpu.temperatureC ? ` · ${stats.cpu.temperatureC}°C` : ''
+    $('#cpu-meta').textContent = `${stats.cpu.brand} · ${coresLabel}${
+      stats.cpu.temperatureC ? ` · ${stats.cpu.temperatureC}°C*` : ''
     }`;
 
     $('#mem-load').textContent = `${stats.memory.usedPercent}%`;
@@ -209,7 +223,7 @@
     stats.disks.forEach((d) => {
       const row = document.createElement('div');
       row.className = 'mini-row';
-      row.innerHTML = `<span>${d.mount}</span><span>${d.usedPercent}% · ${formatBytes(
+      row.innerHTML = `<span>${escapeHtml(d.mount)}</span><span>${d.usedPercent}% · ${formatBytes(
         d.usedBytes
       )}/${formatBytes(d.totalBytes)}</span>`;
       disksEl.appendChild(row);
@@ -223,7 +237,7 @@
       .forEach((n) => {
         const row = document.createElement('div');
         row.className = 'mini-row';
-        row.innerHTML = `<span>${n.iface}</span><span>↓${formatSpeed(n.rxBytesPerSec)} ↑${formatSpeed(
+        row.innerHTML = `<span>${escapeHtml(n.iface)}</span><span>↓${formatSpeed(n.rxBytesPerSec)} ↑${formatSpeed(
           n.txBytesPerSec
         )}</span>`;
         netEl.appendChild(row);
@@ -232,10 +246,13 @@
 
     $('#sys-platform').textContent = stats.platform;
     $('#sys-uptime').textContent = formatUptime(stats.uptimeSeconds);
-    $('#sys-temp').textContent = stats.cpu.temperatureC ? `${stats.cpu.temperatureC}°C` : '—';
+    $('#sys-temp').textContent = stats.cpu.temperatureC ? `${stats.cpu.temperatureC}°C*` : '—';
     $('#sys-battery').textContent = stats.battery
       ? `${stats.battery.percent}%${stats.battery.isCharging ? ' (заряжается)' : ''}`
       : 'нет батареи';
+
+    const tempNote = $('#temp-note');
+    if (tempNote) tempNote.hidden = !stats.cpu.temperatureC;
   }
 
   // ---------- Процессы ----------
@@ -262,7 +279,7 @@
       row.className = 'process-row';
       row.innerHTML = `
         <div class="process-info">
-          <div class="process-name">${p.name}</div>
+          <div class="process-name">${escapeHtml(p.name)}</div>
           <div class="process-stats">PID ${p.pid} · CPU ${p.cpuPercent}% · RAM ${p.memPercent}%</div>
         </div>
         <button class="kill-btn" data-pid="${p.pid}">Завершить</button>
