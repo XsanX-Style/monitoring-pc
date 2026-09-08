@@ -1,0 +1,41 @@
+/* Небольшие добавки поверх стилей панели — только для демо-страницы. */
+
+.demo-badge {
+  position: fixed;
+  left: 12px;
+  bottom: 12px;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(19, 26, 34, 0.92);
+  border: 1px solid #24303c;
+  backdrop-filter: blur(8px);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8fa1b3;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.demo-badge-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #ffb020;
+  box-shadow: 0 0 8px rgba(255, 176, 32, 0.7);
+}
+
+.demo-badge a {
+  color: #3ea6ff;
+  text-decoration: none;
+  padding-left: 10px;
+  margin-left: 2px;
+  border-left: 1px solid #24303c;
+}
+
+@media (max-width: 420px) {
+  .demo-badge { font-size: 10px; padding: 7px 11px; }
+}

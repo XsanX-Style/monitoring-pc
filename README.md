@@ -84,6 +84,21 @@ npm start
 4. На вкладке Environment добавьте переменные из вашего `.env` (либо оставьте `.env` — dotenv подхватит его из Startup directory).
 5. `nssm start PCMonitor` — сервер запустится и будет автоматически стартовать вместе с Windows.
 
+## Превью-сайт и демо
+
+В папке `site/` лежит витрина проекта: лендинг с описанием возможностей и интерактивное демо панели.
+Демо показывает настоящий интерфейс из `public/` (те же стили и тот же `app.js`), но `fetch` и
+`WebSocket` подменены заглушками — телеметрия генерируется в браузере, никакая реальная машина
+не управляется.
+
+```bash
+npm run build:site      # собирает site/dist
+npx http-server site/dist -p 4321
+```
+
+Деплой на Vercel настроен через `vercel.json`: команда сборки `node scripts/build-site.js`,
+каталог с результатом — `site/dist`.
+
 ## Структура проекта
 
 ```
@@ -96,7 +111,13 @@ server/
   config/quickLaunch.json  # кнопки быстрого запуска
 public/
   index.html, css/, js/    # мобильный дашборд (без сборки, чистый JS)
-scripts/create-user.js     # генерация bcrypt-хэша пароля
+site/
+  index.html               # лендинг превью-сайта
+  demo.html                # демо панели с подменёнными fetch/WebSocket
+  assets/                  # стили и скрипты лендинга, заглушки API
+scripts/
+  create-user.js           # генерация bcrypt-хэша пароля
+  build-site.js            # сборка превью-сайта в site/dist
 ```
 
 ## Безопасность
