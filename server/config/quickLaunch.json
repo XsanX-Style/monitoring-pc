@@ -1,0 +1,5 @@
+[
+  { "name": "Проводник", "command": "explorer.exe", "detached": true },
+  { "name": "Диспетчер задач", "command": "taskmgr.exe", "detached": true },
+  { "name": "Блокнот", "command": "notepad.exe", "detached": true }
+]
