@@ -49,7 +49,37 @@ async function listProcesses() {
     .sort((a, b) => b.cpuPercent - a.cpuPercent);
 }
 
-async function killProcess(pid) {
+function runCmd(cmd) {
+  return new Promise((resolve, reject) => {
+    exec(cmd, { windowsHide: true }, (error, stdout, stderr) => {
+      if (error) return reject(new Error(stderr || error.message));
+      resolve(stdout.trim());
+    });
+  });
+}
+
+function pidAlive(numericPid) {
+  return new Promise((resolve) => {
+    try {
+      process.kill(numericPid, 0);
+      resolve(true);
+    } catch (err) {
+      resolve(false);
+    }
+  });
+}
+
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// Сначала пытаемся закрыть процесс "по-хорошему" (даём GUI-приложению
+// шанс предложить сохранить несохранённые данные), и только если это не
+// сработало — убиваем принудительно. На Windows у процессов без окна
+// (служб, консольных программ) обычный taskkill почти всегда вернёт
+// ошибку "can only be terminated forcefully" — в этом случае откатываемся
+// на /F автоматически.
+async function killProcess(pid, options = {}) {
   const numericPid = parseInt(pid, 10);
   if (!Number.isInteger(numericPid) || numericPid <= 0) {
     throw new Error('Некорректный PID');
@@ -67,15 +97,28 @@ async function killProcess(pid) {
     );
   }
 
-  return new Promise((resolve, reject) => {
-    const cmd =
-      os.platform() === 'win32' ? `taskkill /PID ${numericPid} /F` : `kill -9 ${numericPid}`;
+  const forceOnly = Boolean(options.force);
+  const isWindows = os.platform() === 'win32';
 
-    exec(cmd, (error, stdout, stderr) => {
-      if (error) return reject(new Error(stderr || error.message));
-      resolve(stdout.trim());
-    });
-  });
+  if (!forceOnly) {
+    try {
+      const output = isWindows
+        ? await runCmd(`taskkill /PID ${numericPid}`)
+        : await (async () => {
+            process.kill(numericPid, 'SIGTERM');
+            await delay(2000);
+            if (!(await pidAlive(numericPid))) return 'Процесс завершён (SIGTERM)';
+            throw new Error('Процесс не завершился по SIGTERM');
+          })();
+      return { method: 'graceful', output };
+    } catch (err) {
+      // Обычный (не силовой) способ не сработал — пробуем принудительно ниже.
+    }
+  }
+
+  const cmd = isWindows ? `taskkill /PID ${numericPid} /F` : `kill -9 ${numericPid}`;
+  const output = await runCmd(cmd);
+  return { method: 'forced', output };
 }
 
 module.exports = { listProcesses, killProcess };

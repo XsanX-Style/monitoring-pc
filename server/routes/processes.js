@@ -15,8 +15,9 @@ router.get('/', async (req, res) => {
 
 router.post('/:pid/kill', actionLimiter, async (req, res) => {
   try {
-    const result = await killProcess(req.params.pid);
-    res.json({ ok: true, result });
+    const force = Boolean(req.body && req.body.force);
+    const result = await killProcess(req.params.pid, { force });
+    res.json({ ok: true, ...result });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
