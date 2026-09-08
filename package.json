@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node server/index.js",
     "dev": "nodemon server/index.js",
-    "create-user": "node scripts/create-user.js"
+    "create-user": "node scripts/create-user.js",
+    "build:site": "node scripts/build-site.js"
   },
   "engines": {
     "node": ">=18"
