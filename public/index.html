@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0f14" />
+  <title>PC Monitor</title>
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <!-- Экран входа -->
+  <section id="login-screen" class="screen">
+    <form id="login-form" class="login-card">
+      <h1>PC Monitor</h1>
+      <p class="subtitle">Вход в панель управления ПК</p>
+      <label>
+        Логин
+        <input type="text" id="login-username" autocomplete="username" required />
+      </label>
+      <label>
+        Пароль
+        <input type="password" id="login-password" autocomplete="current-password" required />
+      </label>
+      <button type="submit">Войти</button>
+      <p id="login-error" class="error" hidden></p>
+    </form>
+  </section>
+
+  <!-- Основной интерфейс -->
+  <section id="app-screen" class="screen" hidden>
+    <header class="topbar">
+      <div class="topbar-title">
+        <span id="ws-indicator" class="dot" title="Соединение"></span>
+        <h1 id="hostname">PC Monitor</h1>
+      </div>
+      <button id="logout-btn" class="icon-btn" title="Выйти">⏻</button>
+    </header>
+
+    <nav class="tabs">
+      <button class="tab-btn active" data-tab="overview">Обзор</button>
+      <button class="tab-btn" data-tab="processes">Процессы</button>
+      <button class="tab-btn" data-tab="run">Запуск</button>
+      <button class="tab-btn" data-tab="power">Питание</button>
+    </nav>
+
+    <main class="content">
+      <!-- Обзор -->
+      <div id="tab-overview" class="tab-panel active">
+        <div class="grid">
+          <div class="card">
+            <h2>CPU</h2>
+            <div class="big-number" id="cpu-load">–%</div>
+            <div class="bar"><div class="bar-fill" id="cpu-bar"></div></div>
+            <div class="meta" id="cpu-meta">—</div>
+          </div>
+          <div class="card">
+            <h2>Память</h2>
+            <div class="big-number" id="mem-load">–%</div>
+            <div class="bar"><div class="bar-fill" id="mem-bar"></div></div>
+            <div class="meta" id="mem-meta">—</div>
+          </div>
+          <div class="card">
+            <h2>Диски</h2>
+            <div id="disks-list" class="mini-list">—</div>
+          </div>
+          <div class="card">
+            <h2>Сеть</h2>
+            <div id="network-list" class="mini-list">—</div>
+          </div>
+          <div class="card">
+            <h2>Система</h2>
+            <div class="mini-list">
+              <div class="mini-row"><span>Платформа</span><span id="sys-platform">—</span></div>
+              <div class="mini-row"><span>Аптайм</span><span id="sys-uptime">—</span></div>
+              <div class="mini-row"><span>Температура CPU</span><span id="sys-temp">—</span></div>
+              <div class="mini-row"><span>Батарея</span><span id="sys-battery">—</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Процессы -->
+      <div id="tab-processes" class="tab-panel">
+        <div class="panel-toolbar">
+          <input type="search" id="process-filter" placeholder="Поиск процесса…" />
+          <button id="refresh-processes" class="secondary-btn">Обновить</button>
+        </div>
+        <div id="process-list" class="process-list">Загрузка…</div>
+      </div>
+
+      <!-- Запуск команд -->
+      <div id="tab-run" class="tab-panel">
+        <div class="card">
+          <h2>Быстрый запуск</h2>
+          <div id="quick-launch-list" class="quick-launch-list">—</div>
+        </div>
+        <div class="card">
+          <h2>Своя команда / скрипт</h2>
+          <form id="run-form">
+            <input type="text" id="run-command" placeholder="Например: notepad.exe" required />
+            <label class="checkbox-row">
+              <input type="checkbox" id="run-detached" checked />
+              Запустить в фоне (не ждать завершения)
+            </label>
+            <button type="submit">Выполнить</button>
+          </form>
+          <pre id="run-output" class="run-output" hidden></pre>
+        </div>
+      </div>
+
+      <!-- Питание -->
+      <div id="tab-power" class="tab-panel">
+        <div class="card power-grid">
+          <button class="power-btn" data-action="lock">🔒<span>Заблокировать</span></button>
+          <button class="power-btn" data-action="sleep">🌙<span>Сон</span></button>
+          <button class="power-btn" data-action="logoff">↪️<span>Выйти из системы</span></button>
+          <button class="power-btn warn" data-action="restart">🔄<span>Перезагрузить</span></button>
+          <button class="power-btn danger" data-action="shutdown">⏻<span>Выключить</span></button>
+          <button class="power-btn" data-action="cancelShutdown">✖️<span>Отменить выключение</span></button>
+        </div>
+      </div>
+    </main>
+  </section>
+
+  <!-- Модалка подтверждения -->
+  <div id="confirm-modal" class="modal" hidden>
+    <div class="modal-card">
+      <p id="confirm-text">Вы уверены?</p>
+      <div class="modal-actions">
+        <button id="confirm-cancel" class="secondary-btn">Отмена</button>
+        <button id="confirm-ok" class="danger-btn">Подтвердить</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" hidden></div>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>
