@@ -1,6 +1,7 @@
 const { WebSocketServer } = require('ws');
 const { verifyTokenString } = require('./middleware/auth');
 const { getStats } = require('./services/systemStats');
+const config = require('./config');
 
 const STATS_INTERVAL_MS = 2000;
 
@@ -9,13 +10,15 @@ function attachWebSocket(server) {
   const clients = new Set();
 
   wss.on('connection', (ws, req) => {
-    try {
-      const url = new URL(req.url, 'http://localhost');
-      const token = url.searchParams.get('token');
-      verifyTokenString(token);
-    } catch (err) {
-      ws.close(1008, 'Unauthorized');
-      return;
+    if (!config.disableAuth) {
+      try {
+        const url = new URL(req.url, 'http://localhost');
+        const token = url.searchParams.get('token');
+        verifyTokenString(token);
+      } catch (err) {
+        ws.close(1008, 'Unauthorized');
+        return;
+      }
     }
 
     clients.add(ws);
