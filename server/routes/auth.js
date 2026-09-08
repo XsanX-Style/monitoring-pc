@@ -14,6 +14,10 @@ const loginLimiter = rateLimit({
   message: { error: 'Слишком много попыток входа. Попробуйте позже.' },
 });
 
+router.get('/status', (req, res) => {
+  res.json({ authRequired: !config.disableAuth });
+});
+
 router.post('/login', loginLimiter, async (req, res) => {
   const { username, password } = req.body || {};
 

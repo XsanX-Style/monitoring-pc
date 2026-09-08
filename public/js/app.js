@@ -3,6 +3,7 @@
   let token = localStorage.getItem(TOKEN_KEY) || null;
   let ws = null;
   let wsReconnectTimer = null;
+  let authRequired = true;
 
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => Array.from(document.querySelectorAll(sel));
@@ -88,6 +89,16 @@
   }
 
   // ---------- Авторизация ----------
+  function showAuthDisabledBanner() {
+    if ($('#auth-disabled-banner')) return;
+    const banner = document.createElement('div');
+    banner.id = 'auth-disabled-banner';
+    banner.className = 'auth-disabled-banner';
+    banner.textContent =
+      '⚠ Вход по паролю временно отключён (DISABLE_AUTH=true) — сайт открыт для всех, у кого есть ссылка.';
+    document.body.prepend(banner);
+  }
+
   function showApp() {
     loginScreen.hidden = true;
     appScreen.hidden = false;
@@ -144,9 +155,10 @@
 
   // ---------- WebSocket: live-статистика ----------
   function connectWs() {
-    if (!token) return;
+    if (authRequired && !token) return;
     const protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-    ws = new WebSocket(`${protocol}://${location.host}/ws?token=${encodeURIComponent(token)}`);
+    const tokenParam = token ? `?token=${encodeURIComponent(token)}` : '';
+    ws = new WebSocket(`${protocol}://${location.host}/ws${tokenParam}`);
 
     ws.addEventListener('open', () => {
       $('#ws-indicator').classList.add('connected');
@@ -349,9 +361,25 @@
   });
 
   // ---------- Старт ----------
-  if (token) {
-    showApp();
-  } else {
-    showLogin();
-  }
+  (async () => {
+    try {
+      const res = await fetch('/api/auth/status');
+      const data = await res.json();
+      authRequired = data.authRequired !== false;
+    } catch (err) {
+      authRequired = true;
+    }
+
+    if (!authRequired) {
+      showAuthDisabledBanner();
+      showApp();
+      return;
+    }
+
+    if (token) {
+      showApp();
+    } else {
+      showLogin();
+    }
+  })();
 })();

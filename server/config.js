@@ -16,6 +16,16 @@ const allowedIps = (process.env.ALLOWED_IPS || '')
   .map((ip) => ip.trim())
   .filter(Boolean);
 
+const disableAuth = process.env.DISABLE_AUTH === 'true';
+
+if (disableAuth) {
+  console.warn(
+    '\n[config] ВНИМАНИЕ: DISABLE_AUTH=true — вход по паролю ОТКЛЮЧЁН. ' +
+      'Любой, кто откроет этот сайт, сможет управлять ПК без пароля. ' +
+      'Верните DISABLE_AUTH=false в .env, как только закончите отладку.\n'
+  );
+}
+
 module.exports = {
   port: parseInt(process.env.PORT, 10) || 3000,
   adminUsername: process.env.ADMIN_USERNAME,
@@ -23,6 +33,7 @@ module.exports = {
   jwtSecret: process.env.JWT_SECRET,
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '12h',
   allowedIps,
+  disableAuth,
   httpsKeyPath: process.env.HTTPS_KEY_PATH || null,
   httpsCertPath: process.env.HTTPS_CERT_PATH || null,
 };

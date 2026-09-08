@@ -17,6 +17,8 @@ function ipAllowed(req, res, next) {
 }
 
 function requireAuth(req, res, next) {
+  if (config.disableAuth) return next();
+
   const header = req.headers.authorization || '';
   const [scheme, token] = header.split(' ');
 
