@@ -14,6 +14,13 @@ const bcrypt = require('bcryptjs');
 const envPath = path.join(__dirname, '..', '.env');
 const envExamplePath = path.join(__dirname, '..', '.env.example');
 
+const CODE_CR = 13; // Enter (\r)
+const CODE_LF = 10; // Enter (\n)
+const CODE_EOF = 4; // Ctrl+D
+const CODE_ETX = 3; // Ctrl+C
+const CODE_BACKSPACE = 8; // \b
+const CODE_DEL = 127; // Backspace on most terminals
+
 function promptPasswordHidden(question) {
   return new Promise((resolve) => {
     const stdin = process.stdin;
@@ -35,34 +42,48 @@ function promptPasswordHidden(question) {
     stdin.setEncoding('utf8');
 
     let password = '';
-    const onData = (char) => {
-      switch (char) {
-        case '\n':
-        case '\r':
-        case '':
+    let done = false;
+
+    // Обрабатываем чанк посимвольно (по кодам символов, а не строковым
+    // сравнением с управляющими байтами) — при быстром наборе терминал
+    // может прислать несколько нажатий одним событием 'data', и раньше
+    // это приводило к тому, что backspace или Enter "склеивались" с
+    // соседними символами и попадали прямо в пароль.
+    const onData = (chunk) => {
+      if (done) return;
+      const text = chunk.toString('utf8');
+
+      for (const char of text) {
+        const code = char.charCodeAt(0);
+
+        if (code === CODE_CR || code === CODE_LF || code === CODE_EOF) {
+          done = true;
           stdin.setRawMode(false);
           stdin.pause();
           stdin.removeListener('data', onData);
           process.stdout.write('\n');
           resolve(password);
-          break;
-        case '': // Ctrl+C
+          return;
+        }
+
+        if (code === CODE_ETX) {
           process.stdout.write('\n');
           process.exit(1);
-          break;
-        case '': // Backspace
-        case '\b':
+        }
+
+        if (code === CODE_BACKSPACE || code === CODE_DEL) {
           if (password.length) {
             password = password.slice(0, -1);
             process.stdout.write('\b \b');
           }
-          break;
-        default:
-          password += char;
-          process.stdout.write('*');
-          break;
+          continue;
+        }
+
+        password += char;
+        process.stdout.write('*');
       }
     };
+
     stdin.on('data', onData);
   });
 }
