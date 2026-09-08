@@ -306,19 +306,55 @@ select.secondary-btn {
 }
 
 /* Запуск */
+.card-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.card-header-row h2 { margin: 0; }
+.card-header-row .icon-btn { width: 32px; height: 32px; font-size: 18px; line-height: 1; }
+
 .quick-launch-list {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
+.quick-launch-chip {
+  display: inline-flex;
+  align-items: stretch;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
 .quick-launch-btn {
   background: var(--surface-2);
-  border: 1px solid var(--border);
+  border: none;
   color: var(--text);
-  border-radius: 10px;
   padding: 10px 14px;
   font-size: 14px;
 }
+.quick-launch-remove {
+  background: var(--surface-2);
+  border: none;
+  border-left: 1px solid var(--border);
+  color: var(--text-dim);
+  padding: 10px 10px;
+  font-size: 12px;
+}
+.quick-launch-remove:hover { color: var(--danger); }
+
+.quick-launch-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+.quick-launch-form[hidden] { display: none; }
+.quick-launch-form-actions { display: flex; gap: 10px; }
+.quick-launch-form-actions button { flex: 1; }
 
 #run-form { display: flex; flex-direction: column; gap: 12px; margin-top: 12px; }
 .checkbox-row { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-dim); }

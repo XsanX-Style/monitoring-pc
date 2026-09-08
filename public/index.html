@@ -127,8 +127,23 @@
       <!-- Запуск команд -->
       <div id="tab-run" class="tab-panel">
         <div class="card">
-          <h2>Быстрый запуск</h2>
+          <div class="card-header-row">
+            <h2>Быстрый запуск</h2>
+            <button id="add-quick-launch-btn" class="icon-btn" type="button" title="Добавить ярлык">+</button>
+          </div>
           <div id="quick-launch-list" class="quick-launch-list">—</div>
+          <form id="quick-launch-form" class="quick-launch-form" hidden>
+            <input type="text" id="ql-name" placeholder="Название (например: Discord)" maxlength="60" required />
+            <input type="text" id="ql-command" placeholder="Команда или путь к программе" maxlength="500" required />
+            <label class="checkbox-row">
+              <input type="checkbox" id="ql-detached" checked />
+              Запускать в фоне
+            </label>
+            <div class="quick-launch-form-actions">
+              <button type="submit" class="secondary-btn">Добавить</button>
+              <button type="button" id="cancel-quick-launch-btn" class="secondary-btn">Отмена</button>
+            </div>
+          </form>
         </div>
         <div class="card">
           <h2>Своя команда / скрипт</h2>
