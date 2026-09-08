@@ -26,7 +26,7 @@ html, body {
 }
 
 .screen { min-height: 100vh; }
-.screen[hidden] { display: none; }
+.screen[hidden] { display: none !important; }
 
 /* Логин */
 #login-screen {
