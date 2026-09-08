@@ -77,7 +77,7 @@
       body: options.body ? JSON.stringify(options.body) : undefined,
     });
 
-    if (res.status === 401) {
+    if (res.status === 401 && !path.startsWith('/auth/')) {
       logout();
       throw new Error('Сессия истекла, войдите снова');
     }
