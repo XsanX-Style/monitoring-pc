@@ -202,6 +202,17 @@ button {
 .mini-row, .mini-list > div { display: flex; justify-content: space-between; gap: 8px; }
 .mini-row span:first-child { color: var(--text-dim); }
 
+.temp-note {
+  margin: 12px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--text-dim);
+}
+.temp-note a { color: var(--accent); }
+.temp-note[hidden] { display: none; }
+
 /* Процессы */
 .panel-toolbar {
   display: flex;
