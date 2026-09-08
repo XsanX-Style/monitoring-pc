@@ -202,6 +202,12 @@ button {
 .mini-row, .mini-list > div { display: flex; justify-content: space-between; gap: 8px; }
 .mini-row span:first-child { color: var(--text-dim); }
 
+.access-url {
+  cursor: pointer;
+  color: var(--accent);
+  text-decoration: underline dotted;
+}
+
 .temp-note {
   margin: 12px 0 0;
   padding-top: 10px;
@@ -230,6 +236,17 @@ button {
   font-size: 14px;
 }
 
+select.secondary-btn {
+  flex-shrink: 0;
+  max-width: 130px;
+}
+
+.process-count {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin: -4px 0 10px;
+}
+
 .process-list { display: flex; flex-direction: column; gap: 8px; }
 
 .process-row {
@@ -255,6 +272,13 @@ button {
   padding: 7px 10px;
   font-size: 12px;
   flex-shrink: 0;
+}
+
+.kill-btn:disabled {
+  background: var(--surface-2);
+  color: var(--text-dim);
+  border-color: var(--border);
+  cursor: not-allowed;
 }
 
 /* Запуск */

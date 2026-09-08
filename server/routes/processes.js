@@ -1,5 +1,6 @@
 const express = require('express');
 const { listProcesses, killProcess } = require('../services/processManager');
+const { actionLimiter } = require('../middleware/rateLimit');
 
 const router = express.Router();
 
@@ -12,7 +13,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-router.post('/:pid/kill', async (req, res) => {
+router.post('/:pid/kill', actionLimiter, async (req, res) => {
   try {
     const result = await killProcess(req.params.pid);
     res.json({ ok: true, result });

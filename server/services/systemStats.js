@@ -1,6 +1,21 @@
 const si = require('systeminformation');
 const os = require('os');
 
+function getLocalIps() {
+  const interfaces = os.networkInterfaces();
+  const ips = [];
+
+  for (const [name, addresses] of Object.entries(interfaces)) {
+    for (const addr of addresses || []) {
+      if (addr.family === 'IPv4' && !addr.internal) {
+        ips.push({ iface: name, address: addr.address });
+      }
+    }
+  }
+
+  return ips;
+}
+
 async function getStats() {
   const [cpu, currentLoad, mem, fsSize, networkStats, time, cpuTemperature, battery, graphics] =
     await Promise.all([
@@ -19,6 +34,7 @@ async function getStats() {
     hostname: os.hostname(),
     platform: `${os.type()} ${os.release()}`,
     uptimeSeconds: time.uptime,
+    localIps: getLocalIps(),
     cpu: {
       manufacturer: cpu.manufacturer,
       brand: cpu.brand,

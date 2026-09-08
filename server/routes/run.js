@@ -2,6 +2,7 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const commandRunner = require('../services/commandRunner');
+const { actionLimiter } = require('../middleware/rateLimit');
 
 const router = express.Router();
 const quickLaunchPath = path.join(__dirname, '..', 'config', 'quickLaunch.json');
@@ -15,7 +16,7 @@ router.get('/quick-launch', (req, res) => {
   }
 });
 
-router.post('/', async (req, res) => {
+router.post('/', actionLimiter, async (req, res) => {
   const { command, detached } = req.body || {};
 
   try {
