@@ -6,6 +6,8 @@
   <meta name="theme-color" content="#0b0f14" />
   <title>PC Monitor</title>
   <link rel="manifest" href="/manifest.json" />
+  <link rel="icon" type="image/svg+xml" href="/icons/icon.svg" />
+  <link rel="apple-touch-icon" href="/icons/icon.svg" />
   <link rel="stylesheet" href="/css/style.css" />
 </head>
 <body>
@@ -84,6 +86,12 @@
               и оставьте его запущенным в фоне.
             </p>
           </div>
+          <div class="card">
+            <h2>Доступ с телефона</h2>
+            <div id="access-urls" class="mini-list">—</div>
+            <p class="temp-note">Нажмите на адрес, чтобы скопировать. Работает в той же сети —
+              для доступа из интернета настройте Tailscale (см. README).</p>
+          </div>
         </div>
       </div>
 
@@ -91,8 +99,13 @@
       <div id="tab-processes" class="tab-panel">
         <div class="panel-toolbar">
           <input type="search" id="process-filter" placeholder="Поиск процесса…" />
+          <select id="process-sort" class="secondary-btn">
+            <option value="cpu">По CPU</option>
+            <option value="mem">По памяти</option>
+          </select>
           <button id="refresh-processes" class="secondary-btn">Обновить</button>
         </div>
+        <div id="process-count" class="process-count"></div>
         <div id="process-list" class="process-list">Загрузка…</div>
       </div>
 

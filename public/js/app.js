@@ -253,10 +253,46 @@
 
     const tempNote = $('#temp-note');
     if (tempNote) tempNote.hidden = !stats.cpu.temperatureC;
+
+    renderAccessUrls(stats.localIps);
   }
+
+  function renderAccessUrls(localIps) {
+    const el = $('#access-urls');
+    if (!el) return;
+
+    const port = location.port || (location.protocol === 'https:' ? '443' : '80');
+    const ips = localIps || [];
+
+    el.innerHTML = '';
+    ips.forEach(({ iface, address }) => {
+      const url = `${location.protocol}//${address}:${port}`;
+      const row = document.createElement('div');
+      row.className = 'mini-row access-url-row';
+      row.innerHTML = `<span>${escapeHtml(iface)}</span><span class="access-url" data-url="${escapeHtml(
+        url
+      )}">${escapeHtml(url)}</span>`;
+      el.appendChild(row);
+    });
+
+    if (!ips.length) el.textContent = 'Не удалось определить локальный адрес';
+  }
+
+  document.addEventListener('click', async (e) => {
+    const target = e.target.closest('.access-url');
+    if (!target) return;
+    const url = target.dataset.url;
+    try {
+      await navigator.clipboard.writeText(url);
+      showToast('Адрес скопирован', 'success');
+    } catch (err) {
+      showToast(url, '');
+    }
+  });
 
   // ---------- Процессы ----------
   let allProcesses = [];
+  const PROCESS_LIMIT = 100;
 
   async function refreshProcesses() {
     const listEl = $('#process-list');
@@ -271,31 +307,49 @@
   function renderProcesses() {
     const listEl = $('#process-list');
     const filter = $('#process-filter').value.trim().toLowerCase();
-    const filtered = allProcesses.filter((p) => p.name.toLowerCase().includes(filter));
+    const sortBy = $('#process-sort') ? $('#process-sort').value : 'cpu';
+
+    const filtered = allProcesses
+      .filter((p) => p.name.toLowerCase().includes(filter))
+      .sort((a, b) => (sortBy === 'mem' ? b.memPercent - a.memPercent : b.cpuPercent - a.cpuPercent));
+
+    const shown = filtered.slice(0, PROCESS_LIMIT);
 
     listEl.innerHTML = '';
-    filtered.slice(0, 100).forEach((p) => {
+    shown.forEach((p) => {
       const row = document.createElement('div');
       row.className = 'process-row';
+      const killBtnHtml = p.protected
+        ? `<button class="kill-btn" disabled title="Системный процесс — завершение заблокировано">🛡 Система</button>`
+        : `<button class="kill-btn" data-pid="${p.pid}">Завершить</button>`;
       row.innerHTML = `
         <div class="process-info">
           <div class="process-name">${escapeHtml(p.name)}</div>
           <div class="process-stats">PID ${p.pid} · CPU ${p.cpuPercent}% · RAM ${p.memPercent}%</div>
         </div>
-        <button class="kill-btn" data-pid="${p.pid}">Завершить</button>
+        ${killBtnHtml}
       `;
       listEl.appendChild(row);
     });
+
+    const countEl = $('#process-count');
+    if (countEl) {
+      countEl.textContent = filtered.length
+        ? `Показано ${shown.length} из ${filtered.length}`
+        : '';
+    }
 
     if (!filtered.length) listEl.textContent = 'Ничего не найдено';
   }
 
   $('#process-filter').addEventListener('input', renderProcesses);
   $('#refresh-processes').addEventListener('click', refreshProcesses);
+  const processSortEl = $('#process-sort');
+  if (processSortEl) processSortEl.addEventListener('change', renderProcesses);
 
   $('#process-list').addEventListener('click', async (e) => {
     const btn = e.target.closest('.kill-btn');
-    if (!btn) return;
+    if (!btn || btn.disabled) return;
     const pid = btn.dataset.pid;
     const proc = allProcesses.find((p) => String(p.pid) === pid);
     const ok = await confirmAction(`Завершить процесс "${proc ? proc.name : pid}" (PID ${pid})?`);
