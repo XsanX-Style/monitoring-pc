@@ -49,17 +49,24 @@
     <main class="content">
       <!-- Обзор -->
       <div id="tab-overview" class="tab-panel active">
+        <div id="resource-warning" class="resource-warning" hidden></div>
         <div class="grid">
           <div class="card">
             <h2>CPU</h2>
             <div class="big-number" id="cpu-load">–%</div>
             <div class="bar"><div class="bar-fill" id="cpu-bar"></div></div>
+            <svg id="cpu-sparkline" class="sparkline" viewBox="0 0 100 28" preserveAspectRatio="none">
+              <polyline points="" />
+            </svg>
             <div class="meta" id="cpu-meta">—</div>
           </div>
           <div class="card">
             <h2>Память</h2>
             <div class="big-number" id="mem-load">–%</div>
             <div class="bar"><div class="bar-fill" id="mem-bar"></div></div>
+            <svg id="mem-sparkline" class="sparkline" viewBox="0 0 100 28" preserveAspectRatio="none">
+              <polyline points="" />
+            </svg>
             <div class="meta" id="mem-meta">—</div>
           </div>
           <div class="card">
@@ -69,6 +76,10 @@
           <div class="card">
             <h2>Сеть</h2>
             <div id="network-list" class="mini-list">—</div>
+          </div>
+          <div class="card" id="gpu-card" hidden>
+            <h2>GPU</h2>
+            <div id="gpu-list" class="mini-list">—</div>
           </div>
           <div class="card">
             <h2>Система</h2>
@@ -105,6 +116,10 @@
           </select>
           <button id="refresh-processes" class="secondary-btn">Обновить</button>
         </div>
+        <label class="checkbox-row process-autorefresh">
+          <input type="checkbox" id="process-autorefresh" />
+          Автообновление каждые 5 сек
+        </label>
         <div id="process-count" class="process-count"></div>
         <div id="process-list" class="process-list">Загрузка…</div>
       </div>

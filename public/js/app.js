@@ -5,6 +5,10 @@
   let wsReconnectTimer = null;
   let authRequired = true;
 
+  const SPARKLINE_LENGTH = 30; // ~1 минута при обновлении раз в 2 сек
+  const cpuHistory = [];
+  const memHistory = [];
+
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => Array.from(document.querySelectorAll(sel));
 
@@ -121,6 +125,7 @@
     loginScreen.hidden = false;
     if (ws) ws.close();
     clearTimeout(wsReconnectTimer);
+    clearInterval(processAutoRefreshTimer);
   }
 
   function logout() {
@@ -159,6 +164,7 @@
       $$('.tab-panel').forEach((p) => p.classList.remove('active'));
       btn.classList.add('active');
       $(`#tab-${btn.dataset.tab}`).classList.add('active');
+      updateProcessAutoRefresh();
     });
   });
 
@@ -198,6 +204,35 @@
     fillEl.classList.toggle('warn', p >= 80);
   }
 
+  function pushHistory(history, value) {
+    history.push(Math.max(0, Math.min(100, value || 0)));
+    if (history.length > SPARKLINE_LENGTH) history.shift();
+  }
+
+  function renderSparkline(svgId, history) {
+    const svg = $(`#${svgId}`);
+    if (!svg) return;
+    const polyline = svg.querySelector('polyline');
+    if (!polyline) return;
+
+    if (history.length < 2) {
+      polyline.setAttribute('points', '');
+      return;
+    }
+
+    const step = 100 / (SPARKLINE_LENGTH - 1);
+    const startX = 100 - (history.length - 1) * step;
+    const points = history
+      .map((value, i) => {
+        const x = startX + i * step;
+        const y = 28 - (value / 100) * 26 - 1;
+        return `${x.toFixed(1)},${y.toFixed(1)}`;
+      })
+      .join(' ');
+
+    polyline.setAttribute('points', points);
+  }
+
   function renderStats(stats) {
     $('#hostname').textContent = stats.hostname || 'PC Monitor';
 
@@ -208,12 +243,16 @@
 
     $('#cpu-load').textContent = `${stats.cpu.loadPercent}%`;
     setBar($('#cpu-bar'), stats.cpu.loadPercent);
+    pushHistory(cpuHistory, stats.cpu.loadPercent);
+    renderSparkline('cpu-sparkline', cpuHistory);
     $('#cpu-meta').textContent = `${stats.cpu.brand} · ${coresLabel}${
       stats.cpu.temperatureC ? ` · ${stats.cpu.temperatureC}°C*` : ''
     }`;
 
     $('#mem-load').textContent = `${stats.memory.usedPercent}%`;
     setBar($('#mem-bar'), stats.memory.usedPercent);
+    pushHistory(memHistory, stats.memory.usedPercent);
+    renderSparkline('mem-sparkline', memHistory);
     $('#mem-meta').textContent = `${formatBytes(stats.memory.usedBytes)} из ${formatBytes(
       stats.memory.totalBytes
     )}`;
@@ -244,6 +283,32 @@
       });
     if (!netEl.children.length) netEl.textContent = 'Нет активности';
 
+    const gpuCard = $('#gpu-card');
+    const gpuEl = $('#gpu-list');
+    if (stats.gpu && stats.gpu.length) {
+      gpuCard.hidden = false;
+      gpuEl.innerHTML = '';
+      stats.gpu.forEach((g) => {
+        const row = document.createElement('div');
+        row.className = 'mini-row';
+        const details = [
+          g.loadPercent != null ? `${g.loadPercent}%` : null,
+          g.temperatureC != null ? `${g.temperatureC}°C` : null,
+          g.vramMB ? `${Math.round(g.vramMB / 1024)} ГБ VRAM` : null,
+        ]
+          .filter(Boolean)
+          .join(' · ');
+        row.innerHTML = `<span>${escapeHtml(g.model || 'GPU')}</span><span>${escapeHtml(
+          details || '—'
+        )}</span>`;
+        gpuEl.appendChild(row);
+      });
+    } else {
+      gpuCard.hidden = true;
+    }
+
+    renderResourceWarning(stats);
+
     $('#sys-platform').textContent = stats.platform;
     $('#sys-uptime').textContent = formatUptime(stats.uptimeSeconds);
     $('#sys-temp').textContent = stats.cpu.temperatureC ? `${stats.cpu.temperatureC}°C*` : '—';
@@ -255,6 +320,33 @@
     if (tempNote) tempNote.hidden = !stats.cpu.temperatureC;
 
     renderAccessUrls(stats.localIps);
+  }
+
+  const RESOURCE_WARNING_THRESHOLD = 90;
+
+  function renderResourceWarning(stats) {
+    const el = $('#resource-warning');
+    if (!el) return;
+
+    const problems = [];
+    if (stats.cpu.loadPercent >= RESOURCE_WARNING_THRESHOLD) {
+      problems.push(`CPU загружен на ${stats.cpu.loadPercent}%`);
+    }
+    if (stats.memory.usedPercent >= RESOURCE_WARNING_THRESHOLD) {
+      problems.push(`память занята на ${stats.memory.usedPercent}%`);
+    }
+    stats.disks.forEach((d) => {
+      if (d.usedPercent >= RESOURCE_WARNING_THRESHOLD) {
+        problems.push(`диск ${d.mount} заполнен на ${d.usedPercent}%`);
+      }
+    });
+
+    if (problems.length) {
+      el.textContent = `⚠ Высокая нагрузка: ${problems.join(', ')}.`;
+      el.hidden = false;
+    } else {
+      el.hidden = true;
+    }
   }
 
   function renderAccessUrls(localIps) {
@@ -347,6 +439,25 @@
   const processSortEl = $('#process-sort');
   if (processSortEl) processSortEl.addEventListener('change', renderProcesses);
 
+  let processAutoRefreshTimer = null;
+  const PROCESS_AUTOREFRESH_MS = 5000;
+
+  function updateProcessAutoRefresh() {
+    clearInterval(processAutoRefreshTimer);
+    processAutoRefreshTimer = null;
+
+    const checkbox = $('#process-autorefresh');
+    const tabActive = $('#tab-processes') && $('#tab-processes').classList.contains('active');
+    if (!checkbox || !checkbox.checked || !tabActive) return;
+
+    processAutoRefreshTimer = setInterval(refreshProcesses, PROCESS_AUTOREFRESH_MS);
+  }
+
+  const processAutoRefreshEl = $('#process-autorefresh');
+  if (processAutoRefreshEl) {
+    processAutoRefreshEl.addEventListener('change', updateProcessAutoRefresh);
+  }
+
   $('#process-list').addEventListener('click', async (e) => {
     const btn = e.target.closest('.kill-btn');
     if (!btn || btn.disabled) return;
@@ -356,8 +467,11 @@
     if (!ok) return;
 
     try {
-      await api(`/processes/${pid}/kill`, { method: 'POST' });
-      showToast('Процесс завершён', 'success');
+      const result = await api(`/processes/${pid}/kill`, { method: 'POST' });
+      showToast(
+        result.method === 'forced' ? 'Процесс завершён принудительно' : 'Процесс закрыт',
+        'success'
+      );
       refreshProcesses();
     } catch (err) {
       showToast(err.message, 'error');
