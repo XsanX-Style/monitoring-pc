@@ -1,0 +1,8 @@
+{
+  "name": "smshub-edit",
+  "private": true,
+  "description": "Renderer for the SMS Hub promo edit",
+  "dependencies": {
+    "playwright-core": "^1.49.1"
+  }
+}

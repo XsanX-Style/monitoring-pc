@@ -1,0 +1,349 @@
+<meta charset="utf-8">
+<title>SMS HUB EDIT</title>
+<link rel="stylesheet" href="local-fonts.css">
+<style>
+:root{
+  --bg:#05070c; --panel:#12151c; --violet:#7c5cff; --violet2:#9b86ff; --cyan:#35dfe0;
+  --paper:#f7f8fb; --muted:#8f98aa;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#000}
+body{font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased}
+#root{position:relative;width:1080px;height:1920px;overflow:hidden;background:var(--bg)}
+img{display:block}
+.scene{position:absolute;inset:0;will-change:opacity,filter}
+.mid{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+
+/* ambient depth */
+#amb{position:absolute;inset:-20%;background:
+  radial-gradient(closest-side at 50% 42%, rgba(124,92,255,.20), transparent 70%),
+  radial-gradient(closest-side at 22% 74%, rgba(53,223,224,.11), transparent 70%);
+  filter:blur(10px)}
+#grid{position:absolute;inset:0;opacity:.14;
+  background-image:linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px);
+  background-size:90px 90px;mask-image:radial-gradient(closest-side at 50% 50%,#000 35%,transparent 78%)}
+#vig{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 46%,rgba(0,0,0,0) 38%,rgba(0,0,0,.5) 76%,rgba(0,0,0,.92) 100%)}
+#beam{position:absolute;left:-10%;width:120%;height:520px;
+  background:linear-gradient(to bottom,rgba(155,134,255,0),rgba(155,134,255,.10),rgba(53,223,224,.07),rgba(155,134,255,0));
+  mix-blend-mode:screen;filter:blur(8px)}
+#fade{position:absolute;inset:0;background:#000;opacity:0}
+
+/* reflection helper */
+.refl{position:relative}
+.refl .rf{position:absolute;left:0;right:0;top:100%;height:46%;overflow:hidden;transform:scaleY(-1);transform-origin:50% 0;opacity:.22;filter:blur(2px);
+  -webkit-mask-image:linear-gradient(to bottom,rgba(0,0,0,.9),transparent 88%);
+  mask-image:linear-gradient(to bottom,rgba(0,0,0,.9),transparent 88%);pointer-events:none}
+
+/* intro / logo / cta type */
+.byline{font:600 30px 'Inter';letter-spacing:.9em;color:#9aa4b6;text-indent:.9em}
+.bigname{font-family:'Montserrat';font-weight:800;font-size:150px;letter-spacing:.06em;text-indent:.06em;color:#fff;line-height:1}
+.rule{height:2px;width:0;background:linear-gradient(90deg,transparent,var(--violet2),var(--cyan),transparent)}
+.smallcaps{font:600 24px 'Inter';letter-spacing:.55em;text-indent:.55em;color:#7f8798;text-transform:uppercase}
+
+.mark{width:190px;height:190px;border-radius:58px;background:linear-gradient(150deg,var(--cyan),var(--violet) 62%,#4a39c8);
+  display:grid;place-items:center;box-shadow:0 30px 90px rgba(124,92,255,.42), 0 0 0 1px rgba(255,255,255,.10) inset}
+.mark span{font-family:'Montserrat';font-weight:800;font-size:100px;color:#061018;line-height:1}
+.wordmark{font-family:'Montserrat';font-weight:800;font-size:112px;color:#fff;letter-spacing:.01em;line-height:1}
+.wordmark em{font-style:normal;background:linear-gradient(90deg,var(--cyan),var(--violet2));-webkit-background-clip:text;background-clip:text;color:transparent}
+
+/* hook */
+.hookline{font-family:'Montserrat';font-weight:800;font-size:96px;color:#fff;line-height:1.06;text-align:center;letter-spacing:-.01em}
+.hookline b{background:linear-gradient(90deg,var(--cyan),var(--violet2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hooksub{margin-top:38px;font:500 30px 'Inter';color:#8992a4;letter-spacing:.06em;text-align:center}
+
+/* phone */
+#cam{position:absolute;left:50%;top:50%;transform-origin:50% 50%;will-change:transform}
+.device{position:relative;width:552px;height:1148px;margin:-574px 0 0 -276px;border-radius:60px;background:#080a10;padding:16px;
+  box-shadow:0 60px 160px rgba(0,0,0,.92), 0 0 0 2px rgba(124,92,255,.22), 0 0 120px rgba(124,92,255,.20)}
+.device .scr{position:relative;width:520px;height:1116px;border-radius:46px;overflow:hidden;background:#0b0d12}
+.device .scr img{width:520px;height:1114px;filter:brightness(1.14) contrast(1.05) saturate(1.08)}
+.device .notch{position:absolute;left:50%;top:26px;transform:translateX(-50%);width:132px;height:32px;border-radius:18px;background:#080a10;z-index:3}
+.glare{position:absolute;inset:0;border-radius:46px;background:linear-gradient(126deg,rgba(255,255,255,.10),rgba(255,255,255,0) 32%,rgba(255,255,255,0) 72%,rgba(255,255,255,.05));
+  mix-blend-mode:screen;pointer-events:none}
+
+/* labels */
+#lab{position:absolute;left:0;right:0;bottom:96px;text-align:center;padding:0 80px}
+#lab .k{font:700 22px 'Inter';letter-spacing:.5em;text-indent:.5em;color:var(--cyan);text-transform:uppercase}
+#lab .t{margin-top:20px;font-family:'Montserrat';font-weight:800;font-size:62px;color:#fff;line-height:1.1}
+#top{position:absolute;left:0;right:0;top:78px;text-align:center}
+.scrim{position:absolute;left:0;right:0;height:330px;pointer-events:none}
+.scrim.t{top:0;background:linear-gradient(to bottom,rgba(5,7,12,.92),rgba(5,7,12,0))}
+.scrim.b{bottom:0;height:580px;background:linear-gradient(to top,rgba(5,7,12,.97) 30%,rgba(5,7,12,.55) 62%,rgba(5,7,12,0))}
+#top .b{display:inline-flex;align-items:center;gap:14px;padding:14px 26px;border-radius:999px;
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(8px);
+  font:700 20px 'Inter';letter-spacing:.34em;text-indent:.34em;color:#cfd6e4;text-transform:uppercase}
+#top .b i{width:12px;height:12px;border-radius:50%;background:var(--cyan);box-shadow:0 0 16px var(--cyan);display:block}
+
+/* telegram scene */
+.tgwrap{position:absolute;left:70px;right:70px;top:50%;transform:translateY(-50%)}
+.tgpanel{position:relative;border-radius:46px;padding:44px 40px 40px;background:
+  radial-gradient(circle at 82% 8%, rgba(124,92,255,.18), transparent 46%),
+  linear-gradient(160deg,#141824,#0d1017);
+  border:1px solid rgba(255,255,255,.10);box-shadow:0 50px 140px rgba(0,0,0,.85), 0 0 90px rgba(124,92,255,.14)}
+.tghead{display:flex;align-items:center;gap:20px;padding:0 8px 26px}
+.tghead .av{width:88px;height:88px;border-radius:26px;background:linear-gradient(150deg,var(--cyan),var(--violet) 62%,#4a39c8);display:grid;place-items:center;
+  font-family:'Montserrat';font-weight:800;font-size:40px;color:#061018}
+.tghead b{display:block;font:700 38px 'Inter';color:#fff}
+.tghead span{display:block;margin-top:6px;font:500 22px 'Inter';color:#7d879a}
+.bubble{position:relative;max-width:94%;background:linear-gradient(150deg,#232a3c,#1a1f2c);border:1px solid rgba(155,134,255,.24);
+  border-radius:34px;border-bottom-left-radius:12px;padding:34px 36px;box-shadow:0 30px 80px rgba(0,0,0,.75), 0 0 60px rgba(124,92,255,.18)}
+.bubble .from{font:700 26px 'Inter';color:var(--violet2);letter-spacing:.14em;text-transform:uppercase}
+.bubble .num{margin-top:14px;font:800 38px 'Inter';color:#fff;letter-spacing:.01em}
+.bubble .txt{margin-top:18px;font:500 36px 'Inter';color:#d8dfec;line-height:1.4}
+.bubble .code{display:inline-block;padding:6px 18px;border-radius:14px;background:rgba(124,92,255,.22);border:1px solid rgba(155,134,255,.6);
+  color:#fff;font-weight:800;font-size:40px;letter-spacing:.06em}
+.bubble .meta{margin-top:20px;display:flex;align-items:center;justify-content:flex-end;gap:10px;font:600 20px 'Inter';color:#6f7889}
+.flysms{position:absolute;left:44px;top:44px;display:flex;align-items:center;gap:12px;padding:18px 30px;border-radius:999px;
+  background:rgba(53,223,224,.16);border:1px solid rgba(53,223,224,.55);font:800 28px 'Inter';color:#d6fbfc;letter-spacing:.2em;
+  box-shadow:0 0 44px rgba(53,223,224,.35)}
+.tgnote{margin-top:52px;text-align:center;font:700 28px 'Inter';letter-spacing:.34em;text-indent:.34em;color:#9aa5b8;text-transform:uppercase}
+
+/* cta */
+.link{font:700 34px 'Inter';letter-spacing:.06em;color:#cfd6e4}
+.link em{font-style:normal;background:linear-gradient(90deg,var(--cyan),var(--violet2));-webkit-background-clip:text;background-clip:text;color:transparent}
+</style>
+
+<div id="root">
+  <div id="amb"></div>
+  <div id="grid"></div>
+
+  <div class="scene" id="sc-intro"><div class="mid">
+    <div class="byline" id="in-by">by</div>
+    <div class="refl" style="margin-top:26px"><div class="bigname" id="in-name">XSANX</div>
+      <div class="rf"><div class="bigname">XSANX</div></div></div>
+    <div class="rule" id="in-rule" style="margin-top:120px"></div>
+  </div></div>
+
+  <div class="scene" id="sc-logo"><div class="mid">
+    <div class="refl"><div class="mark" id="lg-mark"><span>S</span></div>
+      <div class="rf"><div class="mark"><span>S</span></div></div></div>
+    <div class="wordmark" id="lg-word" style="margin-top:150px">SMS <em>HUB</em></div>
+    <div class="smallcaps" id="lg-sub" style="margin-top:34px">номер · sms · telegram</div>
+  </div></div>
+
+  <div class="scene" id="sc-hook"><div class="mid">
+    <div class="hookline" id="hk-1">НУЖЕН НОМЕР.<br><b>НУЖЕН КОД.</b></div>
+    <div class="hooksub" id="hk-2">а свой отдавать не хочется</div>
+  </div></div>
+
+  <div class="scene" id="sc-phone">
+    <div id="cam"><div class="device">
+      <div class="notch"></div>
+      <div class="scr"><img id="appimg" src="app/a_0000.png"><div class="glare"></div></div>
+    </div></div>
+    <div class="scrim t"></div>
+    <div class="scrim b"></div>
+    <div id="top"><span class="b" id="top-b"><i></i><span id="top-t">telegram mini app</span></span></div>
+    <div id="lab"><div class="k" id="lab-k"></div><div class="t" id="lab-t"></div></div>
+  </div>
+
+  <div class="scene" id="sc-tg">
+    <div class="tgwrap"><div class="tgpanel">
+      <div class="tghead"><div class="av">S</div><div><b>SMS Hub</b><span>bot · онлайн</span></div></div>
+      <div class="bubble" id="tg-bub">
+        <div class="from">Новое SMS</div>
+        <div class="num">+7 999 123-45-67</div>
+        <div class="txt">От: Telegram<br>Код для входа: <span class="code" id="tg-code">91746</span></div>
+        <div class="meta"><span>16:53</span><span>✓✓</span></div>
+      </div>
+      <div class="flysms" id="tg-fly">SMS</div>
+      </div>
+      <div class="tgnote" id="tg-note">прилетает в telegram за секунду</div>
+    </div>
+  </div>
+
+  <div class="scene" id="sc-cta"><div class="mid">
+    <div class="refl"><div class="mark" id="ct-mark" style="width:150px;height:150px;border-radius:46px">
+      <span style="font-size:80px">S</span></div>
+      <div class="rf"><div class="mark" style="width:150px;height:150px;border-radius:46px"><span style="font-size:80px">S</span></div></div></div>
+    <div class="wordmark" id="ct-word" style="margin-top:124px;font-size:96px">SMS <em>HUB</em></div>
+    <div class="rule" id="ct-rule" style="margin-top:44px"></div>
+    <div class="link" id="ct-link" style="margin-top:44px">sms-tg-forwarder<em>.vercel.app</em></div>
+    <div class="smallcaps" id="ct-by" style="margin-top:40px">by xsanx</div>
+  </div></div>
+
+  <div id="beam"></div>
+  <div id="vig"></div>
+  <div id="fade"></div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+const lerp=(a,b,t)=>a+(b-a)*t;
+const eo=t=>1-Math.pow(1-clamp(t,0,1),3);
+const eoq=t=>1-Math.pow(1-clamp(t,0,1),5);
+const eio=t=>{t=clamp(t,0,1);return t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;};
+const smooth=t=>{t=clamp(t,0,1);return t*t*(3-2*t);};
+
+const CUES=[
+ {s:'intro',t0:0.00,t1:2.30,fi:0.60,fo:0.34},
+ {s:'logo', t0:2.02,t1:3.36,fi:0.34,fo:0.32},
+ {s:'hook', t0:3.06,t1:4.38,fi:0.32,fo:0.32},
+ {s:'phone',t0:4.10,t1:9.98,fi:0.36,fo:0.32},
+ {s:'tg',   t0:9.70,t1:11.08,fi:0.32,fo:0.30},
+ {s:'cta',  t0:10.80,t1:12.00,fi:0.34,fo:0.001}
+];
+const IDS={intro:'sc-intro',logo:'sc-logo',hook:'sc-hook',phone:'sc-phone',tg:'sc-tg',cta:'sc-cta'};
+
+/* edit time -> app footage time (piecewise linear, keeps key beats at ~1x) */
+const MAP=[[4.10,0.00],[4.85,0.95],[5.37,1.55],[5.89,2.15],[6.41,2.70],[6.93,3.20],[7.45,3.70],
+           [7.97,4.25],[8.49,4.85],[9.01,5.45],[9.53,6.05],[9.98,6.58]];
+const APP_FPS=60, APP_MAX=404;
+function appFrame(t){
+  let a=MAP[0][1];
+  for(let i=0;i<MAP.length-1;i++){
+    const [x0,y0]=MAP[i],[x1,y1]=MAP[i+1];
+    if(t>=x0&&t<=x1){ a=lerp(y0,y1,(t-x0)/(x1-x0)); break; }
+    if(t>x1) a=y1;
+  }
+  return clamp(Math.round(a*APP_FPS),0,APP_MAX);
+}
+/* camera stations: [t, scale, y, x] */
+const CAM=[[4.10,1.04,330,0],[4.85,1.20,112,0],[5.37,1.28,40,0],[5.89,1.32,-6,0],[6.41,1.35,-20,0],
+           [6.93,1.39,-108,0],[7.45,1.43,-140,0],[7.97,1.35,16,0],[8.49,1.39,60,0],
+           [9.01,1.50,150,0],[9.53,1.66,178,0],[9.98,1.58,168,0]];
+function camAt(t){
+  if(t<=CAM[0][0]) return CAM[0].slice(1);
+  for(let i=0;i<CAM.length-1;i++){
+    const A=CAM[i],B=CAM[i+1];
+    if(t>=A[0]&&t<=B[0]){
+      const p=eio((t-A[0])/(B[0]-A[0]));
+      return [lerp(A[1],B[1],p),lerp(A[2],B[2],p),lerp(A[3],B[3],p)];
+    }
+  }
+  return CAM[CAM.length-1].slice(1);
+}
+/* label stations */
+const LAB=[[4.10,'',''],[4.86,'telegram mini app','SMS HUB'],
+           [5.90,'главный экран','НОМЕРА И КОДЫ<br>В ОДНОМ МЕСТЕ'],
+           [6.94,'заказ','ВЫБРАЛ КОЛИЧЕСТВО —<br>И ГОТОВО'],
+           [7.98,'кабинет','6 НОМЕРОВ ·<br>ВСЕ АКТИВНЫ'],
+           [8.50,'входящие','SMS ПРИЛЕТАЮТ<br>МГНОВЕННО'],
+           [9.02,'код','ВИДНО СРАЗУ'],
+           [9.54,'одно касание','КОД СКОПИРОВАН']];
+function labAt(t){
+  let i=0; for(let k=0;k<LAB.length;k++) if(t>=LAB[k][0]) i=k;
+  const start=LAB[i][0];
+  const nextStart=(i+1<LAB.length)?LAB[i+1][0]:1e9;
+  const inA=smooth((t-start)/0.26);
+  const outA=smooth((nextStart-t)/0.22);
+  return {k:LAB[i][1],t:LAB[i][2],a:Math.min(inA,outA)};
+}
+const TOP=[[4.10,'telegram mini app'],[6.94,'заказ номеров'],[8.50,'входящие sms']];
+function topAt(t){
+  let i=0; for(let k=0;k<TOP.length;k++) if(t>=TOP[k][0]) i=k;
+  const nextStart=(i+1<TOP.length)?TOP[i+1][0]:1e9;
+  return {t:TOP[i][1],a:Math.min(smooth((t-TOP[i][0])/0.3),smooth((nextStart-t)/0.22))};
+}
+
+function sceneAlpha(c,t){
+  if(t<c.t0-0.001||t>c.t1+0.001) return 0;
+  return Math.min(smooth((t-c.t0)/c.fi), c.fo>0.002?smooth((c.t1-t)/c.fo):1);
+}
+
+/* ---------------- scenes ---------------- */
+function scIntro(u,a){
+  const z=lerp(1.14,1.0,eio(clamp(u/2.3,0,1)));
+  const el=$('sc-intro').firstElementChild;
+  el.style.transform=`scale(${z.toFixed(4)})`;
+  const app=eo(u/1.0);
+  $('in-name').style.filter=`blur(${((1-eo(u/0.9))*26).toFixed(1)}px)`;
+  $('in-name').style.letterSpacing=lerp(0.24,0.06,eo(u/1.3)).toFixed(3)+'em';
+  $('in-name').style.textIndent=lerp(0.24,0.06,eo(u/1.3)).toFixed(3)+'em';
+  $('in-by').style.opacity=eo((u-0.35)/0.9).toFixed(3);
+  $('in-rule').style.width=(eio(clamp((u-0.5)/1.5,0,1))*560).toFixed(0)+'px';
+}
+function scLogo(u,a){
+  const el=$('sc-logo').firstElementChild;
+  el.style.transform=`scale(${lerp(1.12,1.0,eio(clamp(u/1.34,0,1))).toFixed(4)})`;
+  const m=eoq(clamp(u/0.7,0,1));
+  $('lg-mark').style.transform=`rotate(${lerp(-14,0,m).toFixed(2)}deg) scale(${lerp(0.72,1,m).toFixed(3)})`;
+  $('lg-word').style.opacity=eo((u-0.18)/0.5).toFixed(3);
+  $('lg-word').style.letterSpacing=lerp(0.14,0.01,eo((u-0.18)/0.9)).toFixed(3)+'em';
+  $('lg-sub').style.opacity=eo((u-0.44)/0.5).toFixed(3);
+  $('lg-sub').style.letterSpacing=lerp(0.72,0.55,eo((u-0.44)/0.9)).toFixed(3)+'em';
+}
+function scHook(u,a){
+  const el=$('sc-hook').firstElementChild;
+  el.style.transform=`scale(${lerp(1.10,1.0,eio(clamp(u/1.32,0,1))).toFixed(4)}) translateY(${lerp(18,0,eo(u/0.7)).toFixed(1)}px)`;
+  $('hk-1').style.opacity=eo(u/0.5).toFixed(3);
+  $('hk-2').style.opacity=eo((u-0.34)/0.5).toFixed(3);
+  $('hk-2').style.letterSpacing=lerp(0.22,0.06,eo((u-0.34)/0.9)).toFixed(3)+'em';
+}
+async function scPhone(t,u,a){
+  const idx=appFrame(t);
+  const src=`app/a_${String(idx).padStart(4,'0')}.png`;
+  const img=$('appimg');
+  if(img.getAttribute('src')!==src){ img.setAttribute('src',src); try{ await img.decode(); }catch(e){} }
+  const [s,y,x]=camAt(t);
+  $('cam').style.transform=`translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) scale(${s.toFixed(4)})`;
+  const intro=clamp(u/0.5,0,1);
+  $('cam').style.filter=`blur(${((1-eo(intro))*9).toFixed(1)}px)`;
+  const L=labAt(t);
+  $('lab-k').innerHTML=L.k; $('lab-t').innerHTML=L.t;
+  $('lab').style.opacity=(L.a*clamp((u-0.25)/0.3,0,1)).toFixed(3);
+  $('lab').style.transform=`translateY(${((1-L.a)*16).toFixed(1)}px)`;
+  const T=topAt(t);
+  $('top-t').textContent=T.t;
+  $('top').style.opacity=(T.a*clamp((u-0.3)/0.3,0,1)).toFixed(3);
+}
+function scTg(u,a){
+  const el=$('sc-tg').firstElementChild;
+  el.style.transform=`translateY(-50%) scale(${lerp(1.26,1.16,eio(clamp(u/1.38,0,1))).toFixed(4)})`;
+  const b=eoq(clamp((u-0.30)/0.5,0,1));
+  const bub=$('tg-bub');
+  bub.style.opacity=b.toFixed(3);
+  bub.style.transform=`translateY(${((1-b)*46).toFixed(1)}px) scale(${lerp(0.94,1,b).toFixed(3)})`;
+  const fly=$('tg-fly');
+  const f=clamp((u-0.02)/0.42,0,1);
+  fly.style.opacity=(f<1?Math.min(1,f*3)*(1-Math.max(0,(f-0.72)/0.28)):0).toFixed(3);
+  fly.style.transform=`translate(${lerp(-190,40,eio(f)).toFixed(1)}px, ${lerp(-300,196,eio(f)).toFixed(1)}px) scale(${lerp(1.25,0.78,f).toFixed(3)})`;
+  const gl=Math.max(0,Math.sin(clamp((u-0.62)/0.55,0,1)*Math.PI));
+  $('tg-code').style.boxShadow=`0 0 ${(34*gl).toFixed(0)}px rgba(124,92,255,${(0.75*gl).toFixed(2)})`;
+  $('tg-code').style.background=`rgba(124,92,255,${(0.18+0.30*gl).toFixed(2)})`;
+  $('tg-note').style.opacity=eo((u-0.52)/0.4).toFixed(3);
+}
+function scCta(u,a){
+  const el=$('sc-cta').firstElementChild;
+  el.style.transform=`scale(${lerp(1.10,1.0,eio(clamp(u/1.2,0,1))).toFixed(4)})`;
+  const m=eoq(clamp(u/0.55,0,1));
+  $('ct-mark').style.transform=`rotate(${lerp(-10,0,m).toFixed(2)}deg) scale(${lerp(0.78,1,m).toFixed(3)})`;
+  $('ct-word').style.opacity=eo((u-0.12)/0.4).toFixed(3);
+  $('ct-word').style.letterSpacing=lerp(0.12,0.01,eo((u-0.12)/0.8)).toFixed(3)+'em';
+  $('ct-rule').style.width=(eio(clamp((u-0.24)/0.6,0,1))*620).toFixed(0)+'px';
+  $('ct-link').style.opacity=eo((u-0.38)/0.4).toFixed(3);
+  $('ct-by').style.opacity=eo((u-0.6)/0.4).toFixed(3);
+  $('ct-by').style.letterSpacing=lerp(0.75,0.55,eo((u-0.6)/0.8)).toFixed(3)+'em';
+}
+
+/* ---------------- main ---------------- */
+async function renderFrame(t){
+  for(const c of CUES){
+    const a=sceneAlpha(c,t);
+    const el=$(IDS[c.s]);
+    if(a<=0.001){ el.style.display='none'; el.style.opacity='0'; continue; }
+    el.style.display='block';
+    el.style.opacity=a.toFixed(3);
+    // soft focus during the dissolve
+    const soft=(1-a);
+    el.style.filter = soft>0.02 ? `blur(${(soft*14).toFixed(1)}px)` : 'none';
+    const u=t-c.t0;
+    if(c.s==='intro') scIntro(u,a);
+    else if(c.s==='logo') scLogo(u,a);
+    else if(c.s==='hook') scHook(u,a);
+    else if(c.s==='phone') await scPhone(t,u,a);
+    else if(c.s==='tg') scTg(u,a);
+    else if(c.s==='cta') scCta(u,a);
+  }
+  // ambient drift + beam
+  $('amb').style.transform=`translate(${(Math.sin(t*0.42)*46).toFixed(1)}px, ${(Math.cos(t*0.33)*40-t*10).toFixed(1)}px) scale(${(1+0.04*Math.sin(t*0.5)).toFixed(3)})`;
+  $('grid').style.transform=`translateY(${(-t*16).toFixed(1)}px) scale(${(1+t*0.006).toFixed(3)})`;
+  $('beam').style.top=(((t*0.20)%1)*2400-560).toFixed(0)+'px';
+  $('beam').style.opacity=(0.55+0.25*Math.sin(t*1.1)).toFixed(2);
+  $('fade').style.opacity=(t<0.45?(1-t/0.45):(t>11.72?clamp((t-11.72)/0.28,0,1):0)).toFixed(3);
+}
+window.renderFrame=renderFrame;
+(async()=>{ try{ await document.fonts.ready; }catch(_){}
+  await renderFrame(0); window.__ready=true; })();
+</script>
