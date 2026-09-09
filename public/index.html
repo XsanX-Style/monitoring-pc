@@ -104,6 +104,13 @@
               для доступа из интернета настройте Tailscale (см. README).</p>
           </div>
         </div>
+        <div class="card">
+          <div class="card-header-row">
+            <h2>Последние действия</h2>
+            <button id="refresh-history-btn" class="icon-btn" type="button" title="Обновить">↻</button>
+          </div>
+          <div id="history-list" class="history-list">—</div>
+        </div>
       </div>
 
       <!-- Процессы -->
@@ -168,6 +175,20 @@
           <button class="power-btn warn" data-action="restart">🔄<span>Перезагрузить</span></button>
           <button class="power-btn danger" data-action="shutdown">⏻<span>Выключить</span></button>
           <button class="power-btn" data-action="cancelShutdown">✖️<span>Отменить выключение</span></button>
+        </div>
+        <div class="card">
+          <h2>Отложенное действие</h2>
+          <div class="delayed-power-row">
+            <select id="delay-minutes" class="secondary-btn">
+              <option value="15">через 15 мин</option>
+              <option value="30" selected>через 30 мин</option>
+              <option value="60">через 1 час</option>
+              <option value="120">через 2 часа</option>
+              <option value="240">через 4 часа</option>
+            </select>
+            <button id="delayed-shutdown-btn" class="secondary-btn">Выключить</button>
+            <button id="delayed-restart-btn" class="secondary-btn">Перезагрузить</button>
+          </div>
         </div>
       </div>
     </main>

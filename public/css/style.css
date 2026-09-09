@@ -406,6 +406,28 @@ select.secondary-btn {
 .power-btn.warn { border-color: rgba(255, 176, 32, 0.5); color: var(--warn); }
 .power-btn.danger { border-color: rgba(255, 82, 82, 0.5); color: var(--danger); }
 
+.delayed-power-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.delayed-power-row select { flex: 1; min-width: 120px; }
+.delayed-power-row button { flex: 1; min-width: 120px; }
+
+/* История действий */
+.history-list { display: flex; flex-direction: column; gap: 6px; font-size: 12px; }
+.history-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--surface-2);
+}
+.history-row.error { background: rgba(255, 82, 82, 0.1); }
+.history-row-main { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.history-row-time { color: var(--text-dim); flex-shrink: 0; }
+
 /* Модалка */
 .modal {
   position: fixed;
@@ -427,6 +449,7 @@ select.secondary-btn {
   max-width: 320px;
   width: 100%;
 }
+#confirm-text { white-space: pre-line; word-break: break-word; }
 
 .modal-actions { display: flex; gap: 10px; margin-top: 16px; }
 .modal-actions button { flex: 1; padding: 11px; border-radius: 10px; border: 1px solid var(--border); }

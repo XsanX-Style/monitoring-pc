@@ -118,6 +118,7 @@
     connectWs();
     refreshProcesses();
     loadQuickLaunch();
+    loadHistory();
   }
 
   function showLogin() {
@@ -382,6 +383,49 @@
     }
   });
 
+  // ---------- История действий ----------
+  const historyTypeLabels = { power: 'Питание', run: 'Команда', kill: 'Процесс' };
+
+  function formatRelativeTime(timestamp) {
+    const diffSec = Math.round((Date.now() - timestamp) / 1000);
+    if (diffSec < 60) return 'только что';
+    if (diffSec < 3600) return `${Math.round(diffSec / 60)} мин назад`;
+    if (diffSec < 86400) return `${Math.round(diffSec / 3600)} ч назад`;
+    return new Date(timestamp).toLocaleString('ru-RU', {
+      day: '2-digit',
+      month: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  }
+
+  async function loadHistory() {
+    const el = $('#history-list');
+    if (!el) return;
+    try {
+      const items = await api('/history');
+      el.innerHTML = '';
+      items.forEach((item) => {
+        const row = document.createElement('div');
+        row.className = `history-row${item.ok ? '' : ' error'}`;
+        const label = historyTypeLabels[item.type] || item.type;
+        const detail = item.ok
+          ? `${label}: ${item.detail}${item.message ? ` (${item.message})` : ''}`
+          : `${label}: ${item.detail} — ошибка: ${item.message}`;
+        row.innerHTML = `<span class="history-row-main">${escapeHtml(
+          detail
+        )}</span><span class="history-row-time">${formatRelativeTime(item.timestamp)}</span>`;
+        el.appendChild(row);
+      });
+      if (!items.length) el.textContent = 'Пока нет действий';
+    } catch (err) {
+      el.textContent = `Ошибка: ${err.message}`;
+    }
+  }
+
+  const refreshHistoryBtn = $('#refresh-history-btn');
+  if (refreshHistoryBtn) refreshHistoryBtn.addEventListener('click', loadHistory);
+
   // ---------- Процессы ----------
   let allProcesses = [];
   const PROCESS_LIMIT = 100;
@@ -473,8 +517,10 @@
         'success'
       );
       refreshProcesses();
+      loadHistory();
     } catch (err) {
       showToast(err.message, 'error');
+      loadHistory();
     }
   });
 
@@ -579,8 +625,10 @@
         outputEl.hidden = false;
         outputEl.textContent = [result.stdout, result.stderr].filter(Boolean).join('\n') || '(нет вывода)';
       }
+      loadHistory();
     } catch (err) {
       showToast(err.message, 'error');
+      loadHistory();
     }
   }
 
@@ -589,6 +637,10 @@
     const command = $('#run-command').value.trim();
     const detached = $('#run-detached').checked;
     if (!command) return;
+
+    const ok = await confirmAction(`Выполнить команду на ПК?\n\n${command}`);
+    if (!ok) return;
+
     await runCommand(command, detached);
   });
 
@@ -611,11 +663,47 @@
       try {
         await api(`/power/${action}`, { method: 'POST' });
         showToast('Команда отправлена', 'success');
+        loadHistory();
       } catch (err) {
         showToast(err.message, 'error');
+        loadHistory();
       }
     });
   });
+
+  const delayLabels = {
+    15: 'через 15 минут',
+    30: 'через 30 минут',
+    60: 'через 1 час',
+    120: 'через 2 часа',
+    240: 'через 4 часа',
+  };
+
+  async function runDelayedPower(action, actionLabel) {
+    const minutes = parseInt($('#delay-minutes').value, 10);
+    const label = delayLabels[minutes] || `через ${minutes} мин`;
+    const ok = await confirmAction(`${actionLabel} ${label}?`);
+    if (!ok) return;
+
+    try {
+      await api(`/power/${action}`, { method: 'POST', body: { delayMinutes: minutes } });
+      showToast(`Запланировано: ${label}`, 'success');
+      loadHistory();
+    } catch (err) {
+      showToast(err.message, 'error');
+      loadHistory();
+    }
+  }
+
+  const delayedShutdownBtn = $('#delayed-shutdown-btn');
+  if (delayedShutdownBtn) {
+    delayedShutdownBtn.addEventListener('click', () => runDelayedPower('shutdown', 'Выключить компьютер'));
+  }
+
+  const delayedRestartBtn = $('#delayed-restart-btn');
+  if (delayedRestartBtn) {
+    delayedRestartBtn.addEventListener('click', () => runDelayedPower('restart', 'Перезагрузить компьютер'));
+  }
 
   // ---------- Старт ----------
   (async () => {

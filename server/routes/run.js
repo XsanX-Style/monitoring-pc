@@ -4,6 +4,7 @@ const path = require('path');
 const crypto = require('crypto');
 const commandRunner = require('../services/commandRunner');
 const { actionLimiter } = require('../middleware/rateLimit');
+const actionLog = require('../services/actionLog');
 
 const router = express.Router();
 const quickLaunchPath = path.join(__dirname, '..', 'config', 'quickLaunch.json');
@@ -87,8 +88,10 @@ router.post('/', actionLimiter, async (req, res) => {
 
   try {
     const result = await commandRunner.run(command, Boolean(detached));
+    actionLog.record({ type: 'run', detail: command, ok: true });
     res.json(result);
   } catch (err) {
+    actionLog.record({ type: 'run', detail: command, ok: false, message: err.message });
     res.status(400).json({ error: err.message });
   }
 });
