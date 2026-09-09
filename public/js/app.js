@@ -25,6 +25,17 @@
       .replace(/'/g, '&#39;');
   }
 
+  function decodeJwtExpiry(jwt) {
+    try {
+      const payload = jwt.split('.')[1];
+      const json = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
+      const data = JSON.parse(json);
+      return typeof data.exp === 'number' ? data.exp * 1000 : null;
+    } catch (err) {
+      return null;
+    }
+  }
+
   function formatBytes(bytes) {
     if (!bytes || bytes <= 0) return '0 Б';
     const units = ['Б', 'КБ', 'МБ', 'ГБ', 'ТБ'];
@@ -47,15 +58,32 @@
     return parts.join(' ');
   }
 
+  const toastQueue = [];
+  let toastShowing = false;
+
   function showToast(message, type = '') {
+    toastQueue.push({ message, type });
+    if (!toastShowing) processToastQueue();
+  }
+
+  function processToastQueue() {
+    const next = toastQueue.shift();
+    if (!next) {
+      toastShowing = false;
+      return;
+    }
+
+    toastShowing = true;
     const toast = $('#toast');
-    toast.textContent = message;
-    toast.className = `toast ${type}`;
+    toast.textContent = next.message;
+    toast.className = `toast ${next.type}`;
     toast.hidden = false;
+
     clearTimeout(showToast._t);
     showToast._t = setTimeout(() => {
       toast.hidden = true;
-    }, 3200);
+      setTimeout(processToastQueue, 150);
+    }, 2600);
   }
 
   function confirmAction(text) {
@@ -68,14 +96,24 @@
         modal.hidden = true;
         okBtn.removeEventListener('click', onOk);
         cancelBtn.removeEventListener('click', onCancel);
+        document.removeEventListener('keydown', onKeydown);
         resolve(result);
       };
       const okBtn = $('#confirm-ok');
       const cancelBtn = $('#confirm-cancel');
       const onOk = () => cleanup(true);
       const onCancel = () => cleanup(false);
+      const onKeydown = (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          cleanup(true);
+        } else if (e.key === 'Escape') {
+          cleanup(false);
+        }
+      };
       okBtn.addEventListener('click', onOk);
       cancelBtn.addEventListener('click', onCancel);
+      document.addEventListener('keydown', onKeydown);
     });
   }
 
@@ -119,6 +157,7 @@
     refreshProcesses();
     loadQuickLaunch();
     loadHistory();
+    startSessionExpiryCheck();
   }
 
   function showLogin() {
@@ -127,6 +166,57 @@
     if (ws) ws.close();
     clearTimeout(wsReconnectTimer);
     clearInterval(processAutoRefreshTimer);
+    stopSessionExpiryCheck();
+  }
+
+  // ---------- Истечение сессии ----------
+  const SESSION_WARNING_WINDOW_MS = 10 * 60 * 1000; // предупреждаем за 10 минут
+  let sessionExpiryTimer = null;
+
+  function showSessionWarningBanner(minutesLeft) {
+    let banner = $('#session-warning-banner');
+    if (!banner) {
+      banner = document.createElement('div');
+      banner.id = 'session-warning-banner';
+      banner.className = 'session-warning-banner';
+      document.body.prepend(banner);
+    }
+    banner.textContent = `⚠ Сессия истекает через ~${minutesLeft} мин. Сохраните несохранённые данные и войдите заново.`;
+  }
+
+  function hideSessionWarningBanner() {
+    const banner = $('#session-warning-banner');
+    if (banner) banner.remove();
+  }
+
+  function checkSessionExpiry() {
+    if (!token) return;
+    const expiry = decodeJwtExpiry(token);
+    if (!expiry) return;
+
+    const remainingMs = expiry - Date.now();
+    if (remainingMs <= 0) {
+      hideSessionWarningBanner();
+      showToast('Сессия истекла, войдите снова', 'error');
+      logout();
+    } else if (remainingMs <= SESSION_WARNING_WINDOW_MS) {
+      showSessionWarningBanner(Math.max(1, Math.round(remainingMs / 60000)));
+    } else {
+      hideSessionWarningBanner();
+    }
+  }
+
+  function startSessionExpiryCheck() {
+    stopSessionExpiryCheck();
+    if (!authRequired) return;
+    checkSessionExpiry();
+    sessionExpiryTimer = setInterval(checkSessionExpiry, 60000);
+  }
+
+  function stopSessionExpiryCheck() {
+    clearInterval(sessionExpiryTimer);
+    sessionExpiryTimer = null;
+    hideSessionWarningBanner();
   }
 
   function logout() {
@@ -324,6 +414,7 @@
   }
 
   const RESOURCE_WARNING_THRESHOLD = 90;
+  const BATTERY_WARNING_THRESHOLD = 15;
 
   function renderResourceWarning(stats) {
     const el = $('#resource-warning');
@@ -341,9 +432,16 @@
         problems.push(`диск ${d.mount} заполнен на ${d.usedPercent}%`);
       }
     });
+    if (
+      stats.battery &&
+      !stats.battery.isCharging &&
+      stats.battery.percent <= BATTERY_WARNING_THRESHOLD
+    ) {
+      problems.push(`батарея разряжена (${stats.battery.percent}%)`);
+    }
 
     if (problems.length) {
-      el.textContent = `⚠ Высокая нагрузка: ${problems.join(', ')}.`;
+      el.textContent = `⚠ ${problems.join(', ')}.`;
       el.hidden = false;
     } else {
       el.hidden = true;
