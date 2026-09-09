@@ -1,0 +1,8 @@
+{
+  "name": "lelouch-edit",
+  "private": true,
+  "description": "Renderer for the Lelouch x projects edit",
+  "dependencies": {
+    "playwright-core": "^1.49.1"
+  }
+}
