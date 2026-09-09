@@ -1,0 +1,8 @@
+{
+  "name": "xsanx-crm-edit",
+  "private": true,
+  "description": "Renderer for the XSANX CRM promo edit",
+  "dependencies": {
+    "playwright-core": "^1.49.1"
+  }
+}

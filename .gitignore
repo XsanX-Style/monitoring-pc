@@ -4,3 +4,6 @@ node_modules/
 npm-debug.log*
 .DS_Store
 server/data/
+media/crm-edit/src/frames/
+media/crm-edit/src/preview/
+media/crm-edit/src/node_modules/
