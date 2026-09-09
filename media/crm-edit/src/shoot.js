@@ -2,7 +2,7 @@ const { chromium } = require('playwright-core');
 const path = require('path'), fs = require('fs');
 
 const DIR = __dirname;
-const EXE = process.env.CHROME_PATH || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const EXE = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 
 (async () => {
   const args = process.argv.slice(2);
