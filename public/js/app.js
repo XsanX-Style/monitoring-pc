@@ -352,10 +352,13 @@
     disksEl.innerHTML = '';
     stats.disks.forEach((d) => {
       const row = document.createElement('div');
-      row.className = 'mini-row';
-      row.innerHTML = `<span>${escapeHtml(d.mount)}</span><span>${d.usedPercent}% · ${formatBytes(
-        d.usedBytes
-      )}/${formatBytes(d.totalBytes)}</span>`;
+      row.className = 'disk-row';
+      const usedWidth = Math.max(0, Math.min(100, d.usedPercent || 0));
+      row.innerHTML = `<div class="disk-row-top"><span class="disk-name">${escapeHtml(
+        d.mount
+      )}</span><span class="disk-value">${d.usedPercent}% · ${formatBytes(d.usedBytes)} / ${formatBytes(
+        d.totalBytes
+      )}</span></div><div class="disk-bar${usedWidth >= 85 ? ' warn' : ''}"><i style="width:${usedWidth}%"></i></div>`;
       disksEl.appendChild(row);
     });
     if (!stats.disks.length) disksEl.textContent = 'Нет данных';
@@ -366,10 +369,12 @@
       .filter((n) => n.rxBytesPerSec || n.txBytesPerSec)
       .forEach((n) => {
         const row = document.createElement('div');
-        row.className = 'mini-row';
-        row.innerHTML = `<span>${escapeHtml(n.iface)}</span><span>↓${formatSpeed(n.rxBytesPerSec)} ↑${formatSpeed(
-          n.txBytesPerSec
-        )}</span>`;
+        row.className = 'net-row';
+        row.innerHTML = `<span class="net-name">${escapeHtml(
+          n.iface
+        )}</span><span class="net-speeds"><span class="net-rx">↓ ${formatSpeed(
+          n.rxBytesPerSec
+        )}</span><span class="net-tx">↑ ${formatSpeed(n.txBytesPerSec)}</span></span>`;
         netEl.appendChild(row);
       });
     if (!netEl.children.length) netEl.textContent = 'Нет активности';
@@ -556,10 +561,16 @@
       const killBtnHtml = p.protected
         ? `<button class="kill-btn" disabled title="Системный процесс — завершение заблокировано">🛡 Система</button>`
         : `<button class="kill-btn" data-pid="${p.pid}">Завершить</button>`;
+      const cpuWidth = Math.max(0, Math.min(100, p.cpuPercent || 0));
+      const memWidth = Math.max(0, Math.min(100, p.memPercent || 0));
       row.innerHTML = `
         <div class="process-info">
           <div class="process-name">${escapeHtml(p.name)}</div>
-          <div class="process-stats">PID ${p.pid} · CPU ${p.cpuPercent}% · RAM ${p.memPercent}%</div>
+          <div class="process-stats">
+            <span class="process-pid">PID ${p.pid}</span>
+            <span class="process-metric cpu">CPU ${p.cpuPercent}%<span class="process-metric-bar"><i style="width:${cpuWidth}%"></i></span></span>
+            <span class="process-metric mem">RAM ${p.memPercent}%<span class="process-metric-bar"><i style="width:${memWidth}%"></i></span></span>
+          </div>
         </div>
         ${killBtnHtml}
       `;

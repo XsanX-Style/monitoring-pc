@@ -3,22 +3,36 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#0b0f14" />
+  <meta name="theme-color" content="#070a0f" />
+  <meta name="description" content="Мониторинг и удалённое управление компьютером с телефона" />
   <title>PC Monitor</title>
   <link rel="manifest" href="/manifest.json" />
   <link rel="icon" type="image/svg+xml" href="/icons/icon.svg" />
   <link rel="apple-touch-icon" href="/icons/icon.svg" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <link rel="stylesheet" href="/css/style.css" />
 </head>
 <body>
   <!-- Экран входа -->
   <section id="login-screen" class="screen">
     <form id="login-form" class="login-card">
-      <h1>PC Monitor</h1>
-      <p class="subtitle">Вход в панель управления ПК</p>
+      <div class="login-brand">
+        <span class="logo-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="4" width="20" height="13" rx="2" />
+            <path d="M8 21h8M12 17v4" />
+            <path d="M6 12.5l2.5-3 2 2 2.5-3.5 2 2.5" />
+          </svg>
+        </span>
+        <div>
+          <h1>PC Monitor</h1>
+          <p class="subtitle">Панель управления компьютером</p>
+        </div>
+      </div>
       <label>
         Логин
-        <input type="text" id="login-username" autocomplete="username" required />
+        <input type="text" id="login-username" autocomplete="username" autocapitalize="none" autocorrect="off" required />
       </label>
       <label>
         Пароль
@@ -26,24 +40,70 @@
       </label>
       <button type="submit">Войти</button>
       <p id="login-error" class="error" hidden></p>
+      <p class="login-hint">Логин и пароль задаются на компьютере командой <code>npm run create-user</code>.</p>
     </form>
   </section>
 
   <!-- Основной интерфейс -->
   <section id="app-screen" class="screen" hidden>
     <header class="topbar">
-      <div class="topbar-title">
-        <span id="ws-indicator" class="dot" title="Соединение"></span>
-        <h1 id="hostname">PC Monitor</h1>
+      <div class="topbar-inner">
+        <div class="topbar-title">
+          <span class="logo-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="4" width="20" height="13" rx="2" />
+              <path d="M8 21h8M12 17v4" />
+              <path d="M6 12.5l2.5-3 2 2 2.5-3.5 2 2.5" />
+            </svg>
+          </span>
+          <div>
+            <h1 id="hostname">PC Monitor</h1>
+            <div class="topbar-sub">Удалённое управление</div>
+          </div>
+        </div>
+        <div class="topbar-actions">
+          <span class="conn-status" title="Состояние соединения">
+            <span id="ws-indicator" class="dot"></span>
+            <span class="conn-online">Онлайн</span>
+            <span class="conn-offline">Нет связи</span>
+          </span>
+          <button id="logout-btn" class="icon-btn" title="Выйти" aria-label="Выйти">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+              <path d="M16 17l5-5-5-5M21 12H9" />
+            </svg>
+          </button>
+        </div>
       </div>
-      <button id="logout-btn" class="icon-btn" title="Выйти">⏻</button>
     </header>
 
-    <nav class="tabs">
-      <button class="tab-btn active" data-tab="overview">Обзор</button>
-      <button class="tab-btn" data-tab="processes">Процессы</button>
-      <button class="tab-btn" data-tab="run">Запуск</button>
-      <button class="tab-btn" data-tab="power">Питание</button>
+    <nav class="tabs" aria-label="Разделы">
+      <button class="tab-btn active" data-tab="overview">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M3 13h4l2.5-6 3.5 12 2.5-8 2 2h4" />
+        </svg>
+        <span class="tab-label">Обзор</span>
+      </button>
+      <button class="tab-btn" data-tab="processes">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01" />
+        </svg>
+        <span class="tab-label">Процессы</span>
+      </button>
+      <button class="tab-btn" data-tab="run">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="2.5" y="4" width="19" height="16" rx="2" />
+          <path d="M7 9l3 3-3 3M13 15h4" />
+        </svg>
+        <span class="tab-label">Запуск</span>
+      </button>
+      <button class="tab-btn" data-tab="power">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 3v9" />
+          <path d="M18.4 6.6a9 9 0 1 1-12.8 0" />
+        </svg>
+        <span class="tab-label">Питание</span>
+      </button>
     </nav>
 
     <main class="content">
@@ -51,37 +111,37 @@
       <div id="tab-overview" class="tab-panel active">
         <div id="resource-warning" class="resource-warning" hidden></div>
         <div class="grid">
-          <div class="card">
+          <div class="card card--stat">
             <h2>CPU</h2>
             <div class="big-number" id="cpu-load">–%</div>
             <div class="bar"><div class="bar-fill" id="cpu-bar"></div></div>
-            <svg id="cpu-sparkline" class="sparkline" viewBox="0 0 100 28" preserveAspectRatio="none">
+            <svg id="cpu-sparkline" class="sparkline" viewBox="0 0 100 28" preserveAspectRatio="none" aria-hidden="true">
               <polyline points="" />
             </svg>
             <div class="meta" id="cpu-meta">—</div>
           </div>
-          <div class="card">
+          <div class="card card--stat">
             <h2>Память</h2>
             <div class="big-number" id="mem-load">–%</div>
             <div class="bar"><div class="bar-fill" id="mem-bar"></div></div>
-            <svg id="mem-sparkline" class="sparkline" viewBox="0 0 100 28" preserveAspectRatio="none">
+            <svg id="mem-sparkline" class="sparkline" viewBox="0 0 100 28" preserveAspectRatio="none" aria-hidden="true">
               <polyline points="" />
             </svg>
             <div class="meta" id="mem-meta">—</div>
           </div>
-          <div class="card">
+          <div class="card card--wide">
             <h2>Диски</h2>
             <div id="disks-list" class="mini-list">—</div>
           </div>
-          <div class="card">
+          <div class="card card--wide">
             <h2>Сеть</h2>
             <div id="network-list" class="mini-list">—</div>
           </div>
-          <div class="card" id="gpu-card" hidden>
+          <div class="card card--wide" id="gpu-card" hidden>
             <h2>GPU</h2>
             <div id="gpu-list" class="mini-list">—</div>
           </div>
-          <div class="card">
+          <div class="card card--wide">
             <h2>Система</h2>
             <div class="mini-list">
               <div class="mini-row"><span>Платформа</span><span id="sys-platform">—</span></div>
@@ -97,7 +157,7 @@
               и оставьте его запущенным в фоне.
             </p>
           </div>
-          <div class="card">
+          <div class="card card--wide">
             <h2>Доступ с телефона</h2>
             <div id="access-urls" class="mini-list">—</div>
             <p class="temp-note">Нажмите на адрес, чтобы скопировать. Работает в той же сети —
@@ -107,7 +167,12 @@
         <div class="card">
           <div class="card-header-row">
             <h2>Последние действия</h2>
-            <button id="refresh-history-btn" class="icon-btn" type="button" title="Обновить">↻</button>
+            <button id="refresh-history-btn" class="icon-btn" type="button" title="Обновить" aria-label="Обновить историю">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M21 12a9 9 0 1 1-2.6-6.4" />
+                <path d="M21 4v5h-5" />
+              </svg>
+            </button>
           </div>
           <div id="history-list" class="history-list">—</div>
         </div>
@@ -116,8 +181,8 @@
       <!-- Процессы -->
       <div id="tab-processes" class="tab-panel">
         <div class="panel-toolbar">
-          <input type="search" id="process-filter" placeholder="Поиск процесса…" />
-          <select id="process-sort" class="secondary-btn">
+          <input type="search" id="process-filter" placeholder="Поиск процесса…" aria-label="Поиск процесса" />
+          <select id="process-sort" class="secondary-btn" aria-label="Сортировка">
             <option value="cpu">По CPU</option>
             <option value="mem">По памяти</option>
           </select>
@@ -136,7 +201,11 @@
         <div class="card">
           <div class="card-header-row">
             <h2>Быстрый запуск</h2>
-            <button id="add-quick-launch-btn" class="icon-btn" type="button" title="Добавить ярлык">+</button>
+            <button id="add-quick-launch-btn" class="icon-btn" type="button" title="Добавить ярлык" aria-label="Добавить ярлык">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+            </button>
           </div>
           <div id="quick-launch-list" class="quick-launch-list">—</div>
           <form id="quick-launch-form" class="quick-launch-form" hidden>
@@ -155,7 +224,7 @@
         <div class="card">
           <h2>Своя команда / скрипт</h2>
           <form id="run-form">
-            <input type="text" id="run-command" placeholder="Например: notepad.exe" required />
+            <input type="text" id="run-command" placeholder="Например: notepad.exe" autocapitalize="none" autocorrect="off" spellcheck="false" required />
             <label class="checkbox-row">
               <input type="checkbox" id="run-detached" checked />
               Запустить в фоне (не ждать завершения)
@@ -169,17 +238,52 @@
       <!-- Питание -->
       <div id="tab-power" class="tab-panel">
         <div class="card power-grid">
-          <button class="power-btn" data-action="lock">🔒<span>Заблокировать</span></button>
-          <button class="power-btn" data-action="sleep">🌙<span>Сон</span></button>
-          <button class="power-btn" data-action="logoff">↪️<span>Выйти из системы</span></button>
-          <button class="power-btn warn" data-action="restart">🔄<span>Перезагрузить</span></button>
-          <button class="power-btn danger" data-action="shutdown">⏻<span>Выключить</span></button>
-          <button class="power-btn" data-action="cancelShutdown">✖️<span>Отменить выключение</span></button>
+          <button class="power-btn" data-action="lock">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="4" y="10.5" width="16" height="10" rx="2" />
+              <path d="M8 10.5V7a4 4 0 0 1 8 0v3.5" />
+            </svg>
+            <span>Заблокировать</span>
+          </button>
+          <button class="power-btn" data-action="sleep">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11z" />
+            </svg>
+            <span>Сон</span>
+          </button>
+          <button class="power-btn" data-action="logoff">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+              <path d="M16 17l5-5-5-5M21 12H9" />
+            </svg>
+            <span>Выйти из системы</span>
+          </button>
+          <button class="power-btn warn" data-action="restart">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 12a9 9 0 1 1-2.6-6.4" />
+              <path d="M21 4v5h-5" />
+            </svg>
+            <span>Перезагрузить</span>
+          </button>
+          <button class="power-btn danger" data-action="shutdown">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 3v9" />
+              <path d="M18.4 6.6a9 9 0 1 1-12.8 0" />
+            </svg>
+            <span>Выключить</span>
+          </button>
+          <button class="power-btn" data-action="cancelShutdown">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" />
+              <path d="M9 9l6 6M15 9l-6 6" />
+            </svg>
+            <span>Отменить выключение</span>
+          </button>
         </div>
         <div class="card">
           <h2>Отложенное действие</h2>
           <div class="delayed-power-row">
-            <select id="delay-minutes" class="secondary-btn">
+            <select id="delay-minutes" class="secondary-btn" aria-label="Задержка">
               <option value="15">через 15 мин</option>
               <option value="30" selected>через 30 мин</option>
               <option value="60">через 1 час</option>
@@ -195,7 +299,7 @@
   </section>
 
   <!-- Модалка подтверждения -->
-  <div id="confirm-modal" class="modal" hidden>
+  <div id="confirm-modal" class="modal" hidden role="dialog" aria-modal="true">
     <div class="modal-card">
       <p id="confirm-text">Вы уверены?</p>
       <div class="modal-actions">
@@ -205,7 +309,7 @@
     </div>
   </div>
 
-  <div id="toast" class="toast" hidden></div>
+  <div id="toast" class="toast" hidden role="status" aria-live="polite"></div>
 
   <script src="/js/app.js"></script>
 </body>
