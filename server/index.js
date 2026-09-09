@@ -15,6 +15,7 @@ const systemRoutes = require('./routes/system');
 const processesRoutes = require('./routes/processes');
 const powerRoutes = require('./routes/power');
 const runRoutes = require('./routes/run');
+const historyRoutes = require('./routes/history');
 
 const app = express();
 
@@ -41,6 +42,7 @@ app.use('/api/system', requireAuth, systemRoutes);
 app.use('/api/processes', requireAuth, processesRoutes);
 app.use('/api/power', requireAuth, powerRoutes);
 app.use('/api/run', requireAuth, runRoutes);
+app.use('/api/history', requireAuth, historyRoutes);
 
 app.use(express.static(path.join(__dirname, '..', 'public')));
 

@@ -110,7 +110,7 @@ async function killProcess(pid, options = {}) {
             if (!(await pidAlive(numericPid))) return 'Процесс завершён (SIGTERM)';
             throw new Error('Процесс не завершился по SIGTERM');
           })();
-      return { method: 'graceful', output };
+      return { method: 'graceful', output, name: proc ? proc.name : null };
     } catch (err) {
       // Обычный (не силовой) способ не сработал — пробуем принудительно ниже.
     }
@@ -118,7 +118,7 @@ async function killProcess(pid, options = {}) {
 
   const cmd = isWindows ? `taskkill /PID ${numericPid} /F` : `kill -9 ${numericPid}`;
   const output = await runCmd(cmd);
-  return { method: 'forced', output };
+  return { method: 'forced', output, name: proc ? proc.name : null };
 }
 
 module.exports = { listProcesses, killProcess };
