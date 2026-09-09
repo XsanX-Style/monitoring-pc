@@ -4,12 +4,13 @@
   "description": "Веб-панель для мониторинга и удалённого управления Windows-ПК с телефона",
   "main": "server/index.js",
   "scripts": {
+    "build": "node scripts/build-site.js",
     "start": "node server/index.js",
     "dev": "nodemon server/index.js",
     "create-user": "node scripts/create-user.js"
   },
   "engines": {
-    "node": ">=18"
+    "node": "24.x"
   },
   "license": "MIT",
   "dependencies": {

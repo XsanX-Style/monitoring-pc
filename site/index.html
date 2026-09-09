@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>PC Monitor — подключение</title>
+  <style>
+    *{box-sizing:border-box}body{margin:0;background:#0c1018;color:#edf2ff;font:17px/1.6 system-ui,sans-serif}main{max-width:740px;margin:10vh auto;padding:28px}h1{font-size:clamp(32px,7vw,52px);line-height:1.1}p{color:#adb9d2}a{color:#a4c5ff}.card{margin-top:30px;padding:24px;border:1px solid #33415d;border-radius:18px}label{display:block}input,button{font:inherit;border-radius:10px;padding:13px;width:100%;margin-top:12px}input{background:#151e30;color:#fff;border:1px solid #516182}button{background:#3979ee;color:#fff;border:0;cursor:pointer}[role=alert]{color:#ffb4b4}small{color:#adb9d2}a:focus-visible,input:focus-visible,button:focus-visible{outline:3px solid #a4c5ff;outline-offset:3px}
+  </style>
+  <script defer src="/connect.js"></script>
+</head>
+<body><main>
+  <small>X-STYLE · PC MONITOR</small>
+  <h1>Управление компьютером</h1>
+  <p>Для устройств с агентом X-Style откройте общий центр управления.</p>
+  <a href="https://remote-infra-manager.vercel.app">Открыть центр управления →</a>
+  <section class="card"><h2>Панель PC Monitor</h2>
+    <p>Запустите PC Monitor на компьютере и введите адрес его панели. Телефон должен иметь доступ к этому адресу через вашу сеть или настроенное удалённое соединение.</p>
+    <form id="connect"><label for="server">Адрес панели на компьютере</label>
+      <input id="server" name="server" type="url" required placeholder="http://192.168.1.10:3000" autocomplete="url">
+      <button type="submit">Открыть панель ПК</button><p id="error" role="alert" hidden></p>
+    </form>
+  </section>
+  <p><a href="https://github.com/XsanX-Style/monitoring-pc#установка">Инструкция по установке PC Monitor</a></p>
+</main></body></html>
