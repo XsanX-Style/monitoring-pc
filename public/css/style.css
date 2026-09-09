@@ -491,3 +491,16 @@ select.secondary-btn {
   text-align: center;
   padding: 8px 12px;
 }
+
+/* Баннер "сессия скоро истечёт" */
+.session-warning-banner {
+  position: sticky;
+  top: 0;
+  z-index: 39;
+  background: var(--warn);
+  color: #241a04;
+  font-weight: 600;
+  font-size: 13px;
+  text-align: center;
+  padding: 8px 12px;
+}
